@@ -1,0 +1,1453 @@
+<title>Boot Chain Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --surface-2: #f3f3f1;
+    --ink: #18181b;
+    --ink-dim: #52525b;
+    --ink-faint: #8b8b93;
+    --border: #e6e6e3;
+    --accent: #16a34a;
+    --accent-ink: #ffffff;
+    --pass: #16a34a;
+    --pass-bg: #dcfce7;
+    --fail: #dc2626;
+    --fail-bg: #fee2e2;
+    --warn: #d97706;
+    --warn-bg: #fef3c7;
+    --node-off: #e6e6e3;
+    --rom-ink: #2563eb; --rom-bg: #dbeafe;
+    --hsm-ink: #7c3aed; --hsm-bg: #ede9fe;
+    --bl2-ink: #b45309; --bl2-bg: #fef3c7;
+    --app-ink: #15803d; --app-bg: #dcfce7;
+    --shadow: 0 1px 2px rgba(20,20,20,.04), 0 8px 24px -14px rgba(20,20,20,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg: #0d0e11;
+      --surface: #16181d;
+      --surface-2: #1c1e24;
+      --ink: #f4f4f5;
+      --ink-dim: #a5a5ae;
+      --ink-faint: #6d6d76;
+      --border: #26282f;
+      --accent: #22c55e;
+      --accent-ink: #06210f;
+      --pass: #34d573;
+      --pass-bg: rgba(34,197,94,.15);
+      --fail: #f87171;
+      --fail-bg: rgba(248,113,113,.15);
+      --warn: #fbbf24;
+      --warn-bg: rgba(251,191,36,.15);
+      --node-off: #262930;
+      --rom-ink: #60a5fa; --rom-bg: rgba(37,99,235,.18);
+      --hsm-ink: #a78bfa; --hsm-bg: rgba(124,58,237,.18);
+      --bl2-ink: #fbbf24; --bl2-bg: rgba(217,119,6,.18);
+      --app-ink: #4ade80; --app-bg: rgba(22,163,74,.18);
+      --shadow: 0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #0d0e11;
+    --surface: #16181d;
+    --surface-2: #1c1e24;
+    --ink: #f4f4f5;
+    --ink-dim: #a5a5ae;
+    --ink-faint: #6d6d76;
+    --border: #26282f;
+    --accent: #22c55e;
+    --accent-ink: #06210f;
+    --pass: #34d573;
+    --pass-bg: rgba(34,197,94,.15);
+    --fail: #f87171;
+    --fail-bg: rgba(248,113,113,.15);
+    --warn: #fbbf24;
+    --warn-bg: rgba(251,191,36,.15);
+    --node-off: #262930;
+    --rom-ink: #60a5fa; --rom-bg: rgba(37,99,235,.18);
+    --hsm-ink: #a78bfa; --hsm-bg: rgba(124,58,237,.18);
+    --bl2-ink: #fbbf24; --bl2-bg: rgba(217,119,6,.18);
+    --app-ink: #4ade80; --app-bg: rgba(22,163,74,.18);
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Inter", ui-sans-serif, system-ui, sans-serif;
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
+  svg.icon{ width:1em; height:1em; display:inline-block; vertical-align:-.15em; }
+  button{ font-family:inherit; }
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    padding:.9rem 1.5rem; border-bottom:1px solid var(--border); background:var(--surface);
+    flex-wrap:wrap;
+  }
+  .brand{ display:flex; align-items:center; gap:.7rem; }
+  .brand-icon{
+    width:2.4rem; height:2.4rem; border-radius:.65rem; background:var(--ink); color:var(--surface);
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+  .brand-icon svg{ width:1.3rem; height:1.3rem; }
+  .brand-title{ font-weight:700; font-size:1.05rem; letter-spacing:-.01em; }
+  .brand-sub{ font-size:.76rem; color:var(--ink-faint); }
+  .topbar-actions{ display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
+
+  .icon-btn{
+    display:inline-flex; align-items:center; gap:.4em; background:var(--surface); color:var(--ink-dim);
+    border:1px solid var(--border); border-radius:.6rem; padding:.5em .75em; font-size:.82rem;
+    font-weight:500; cursor:pointer; box-shadow:var(--shadow);
+  }
+  .icon-btn:hover{ color:var(--ink); border-color:var(--ink-faint); }
+  .icon-btn svg{ width:1rem; height:1rem; }
+
+  .algo-wrap{
+    display:flex; flex-direction:column; gap:.2rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:.6rem; padding:.35em .7em; box-shadow:var(--shadow);
+  }
+  .algo-wrap label{ font-size:.66rem; color:var(--ink-faint); font-weight:600; text-transform:uppercase; letter-spacing:.03em; }
+  select.algo-select{
+    appearance:none; -webkit-appearance:none; border:none; background:none; color:var(--ink);
+    font-family:inherit; font-weight:700; font-size:.85rem; padding:0 1.3em 0 0; cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b8b93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right center; background-size:1em;
+  }
+  select.algo-select:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  .status-pill{
+    display:inline-flex; align-items:center; gap:.5em; background:var(--pass-bg); color:var(--pass);
+    border-radius:999px; padding:.5em .9em; font-size:.82rem; font-weight:600;
+  }
+  .status-pill.busy{ background:var(--warn-bg); color:var(--warn); }
+  .status-pill.halted{ background:var(--fail-bg); color:var(--fail); }
+  .status-dot{ width:.5em; height:.5em; border-radius:50%; background:currentColor; }
+  .status-dot.pulse{ animation:pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
+
+  .info-wrap{ position:relative; }
+  .info-popover{
+    position:absolute; right:0; top:calc(100% + .5rem); width:min(340px, 80vw); z-index:20;
+    background:var(--surface); border:1px solid var(--border); border-radius:.7rem; box-shadow:var(--shadow);
+    padding:.9rem 1rem; font-size:.8rem; color:var(--ink-dim); display:none;
+  }
+  .info-popover.open{ display:block; }
+  .info-popover b{ color:var(--ink); }
+
+  /* ---------- page ---------- */
+  .page{ max-width:1320px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+  .hero-grid{ display:grid; grid-template-columns:1fr 1.15fr; gap:2rem; align-items:start; }
+  @media (max-width:980px){ .hero-grid{ grid-template-columns:1fr; } }
+
+  .eyebrow{
+    display:flex; align-items:center; gap:.4em;
+    font-size:.74rem; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink-faint); font-weight:700;
+  }
+  .eyebrow svg{ width:1em; height:1em; color:var(--accent); }
+  h1{
+    font-weight:800; letter-spacing:-.02em; font-size:clamp(2rem, 3.6vw, 2.8rem);
+    line-height:1.05; margin:.35rem 0 .7rem; display:flex; align-items:center; gap:.5rem;
+    text-wrap:balance;
+  }
+  h1 .title-badge{ width:.75em; height:.75em; color:var(--pass); flex:0 0 auto; }
+  .tagline{ max-width:52ch; color:var(--ink-dim); font-size:1rem; }
+
+  .feature-row{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:.9rem 1.6rem; margin-top:1.6rem; }
+  @media (min-width:560px) and (max-width:980px){ .feature-row{ grid-template-columns:repeat(4, minmax(0,1fr)); } }
+  .feature{ display:flex; align-items:flex-start; gap:.55rem; }
+  .feature-icon{
+    width:1.9rem; height:1.9rem; border-radius:.5rem; background:var(--surface-2); color:var(--accent);
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto; border:1px solid var(--border);
+  }
+  .feature-icon svg{ width:1rem; height:1rem; }
+  .feature b{ display:block; font-size:.85rem; font-weight:600; }
+  .feature span{ display:block; font-size:.74rem; color:var(--ink-faint); }
+
+  /* ---------- pipeline ---------- */
+  .pipeline-wrap{ overflow-x:auto; padding-bottom:.3rem; }
+  .pipeline{ display:flex; align-items:stretch; gap:0; min-width:640px; }
+  .keystore-col{
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    width:64px; flex:0 0 auto; padding-top:1.1rem;
+  }
+  .node{
+    flex:1 1 0; background:var(--surface); border:1px solid var(--border);
+    border-radius:.9rem; padding:1rem 1rem 1.1rem; box-shadow:var(--shadow);
+    position:relative; min-width:130px; transition:box-shadow .3s ease, border-color .3s ease;
+  }
+  .node.st-pass{ border-color:color-mix(in srgb, var(--pass) 45%, var(--border)); }
+  .node.st-fail{ border-color:color-mix(in srgb, var(--fail) 45%, var(--border)); }
+  .node.st-checking{ border-color:color-mix(in srgb, var(--warn) 45%, var(--border)); }
+  .node.st-unreached{ opacity:.4; }
+  .node-icon{
+    width:2.5rem; height:2.5rem; border-radius:.65rem; display:flex; align-items:center; justify-content:center;
+    margin-bottom:.7rem;
+  }
+  .node-icon svg{ width:1.3rem; height:1.3rem; }
+  .node-icon-rom{ background:var(--rom-bg); color:var(--rom-ink); }
+  .node-icon-hsmfw{ background:var(--hsm-bg); color:var(--hsm-ink); }
+  .node-icon-bl2{ background:var(--bl2-bg); color:var(--bl2-ink); }
+  .node-icon-app{ background:var(--app-bg); color:var(--app-ink); }
+  .node-label{ font-weight:700; font-size:1rem; letter-spacing:-.01em; }
+  .node-sub{ font-size:.76rem; color:var(--ink-faint); margin-top:.2rem; min-height:2.1em; }
+  .node-pill{
+    display:inline-flex; align-items:center; gap:.4em; margin-top:.7rem;
+    font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.02em;
+    padding:.3em .65em; border-radius:999px; background:var(--surface-2); color:var(--ink-dim);
+  }
+  .node-pill.st-pass{ background:var(--pass-bg); color:var(--pass); }
+  .node-pill.st-fail{ background:var(--fail-bg); color:var(--fail); }
+  .node-pill.st-checking{ background:var(--warn-bg); color:var(--warn); }
+  .dot{ width:.4em; height:.4em; border-radius:50%; background:currentColor; flex:0 0 auto; }
+  .dot.pulse{ animation:pulse 1s ease-in-out infinite; }
+
+  .link{
+    flex:0 0 46px; display:flex; align-items:center; justify-content:center;
+    position:relative; align-self:center; height:2px; margin-top:1.9rem;
+  }
+  .link .wire{ position:absolute; inset:0; height:2px; top:50%; transform:translateY(-50%); background:var(--border); border-top:2px dashed var(--border); background:none; }
+  .link .flow{
+    position:absolute; top:50%; left:0; height:2px; width:40%; transform:translateY(-50%);
+    background:linear-gradient(90deg, transparent, var(--warn), transparent); opacity:0;
+  }
+  .link.flowing .flow{ opacity:1; animation:flow 1s linear infinite; }
+  @keyframes flow{ from{ left:-40%; } to{ left:100%; } }
+  .link.pass .wire{ border-top-color:var(--pass); border-top-style:solid; }
+  .link.fail .wire{ border-top-color:var(--fail); }
+  .link-chip{
+    position:absolute; z-index:1; top:-1.6rem; background:var(--surface); border:1px solid var(--border);
+    border-radius:999px; padding:.22em .6em; font-family:"IBM Plex Mono"; font-size:.62rem;
+    letter-spacing:.02em; color:var(--ink-faint); cursor:pointer; box-shadow:var(--shadow); white-space:nowrap;
+  }
+  .link-chip:hover{ color:var(--accent); border-color:var(--accent); }
+  .link-chip.selected{ color:var(--accent-ink); background:var(--accent); border-color:var(--accent); }
+  .link.fail .link-chip{ color:var(--fail); border-color:var(--fail); }
+  .link.pass .link-chip{ color:var(--pass); border-color:var(--pass); }
+
+  .keystore{
+    width:2.6rem; height:2.6rem; border-radius:50%; background:var(--surface-2);
+    border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center;
+    margin-bottom:.4rem;
+  }
+  .keystore svg{ width:1.2rem; height:1.2rem; }
+  .keystore .shackle{ transform-origin:12px 9px; transition:transform .5s cubic-bezier(.2,1.4,.4,1); }
+  .keystore.unlocked .shackle{ transform:translateY(-2px) rotate(-18deg); }
+  .keystore.unlocked{ border-color:var(--pass); background:var(--pass-bg); }
+  .keystore.unlocked svg{ color:var(--pass); }
+  .keystore.locked svg{ color:var(--ink-faint); }
+  .keystore.alarmed{ border-color:var(--fail); background:var(--fail-bg); animation:shake .4s; }
+  .keystore.alarmed svg{ color:var(--fail); }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-3px);} 75%{transform:translateX(3px);} }
+  .keystore-caption{ font-size:.64rem; text-align:center; color:var(--ink-faint); font-weight:600; line-height:1.25; }
+
+  /* ---------- controls ---------- */
+  .controls{ display:flex; flex-wrap:wrap; gap:.55rem; margin-top:1.6rem; align-items:center; }
+  .scn-tab{
+    display:inline-flex; align-items:center; gap:.4em; font-weight:600; font-size:.83rem; cursor:pointer;
+    background:var(--surface); color:var(--ink-dim); border:1px solid var(--border);
+    padding:.55em 1em; border-radius:999px; box-shadow:var(--shadow); transition:border-color .15s ease;
+  }
+  .scn-tab svg{ width:.95em; height:.95em; }
+  .scn-tab:hover{ border-color:var(--ink-faint); color:var(--ink); }
+  .scn-tab.primary{ background:var(--pass); color:#fff; border-color:var(--pass); }
+  .scn-tab:focus-visible, .link-chip:focus-visible, .hexcell:focus-visible, .ghost:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+  .spacer{ flex:1 1 auto; }
+  .counters{ font-family:"IBM Plex Mono"; font-size:.74rem; color:var(--ink-faint); letter-spacing:.01em; white-space:nowrap; }
+  .counters b{ color:var(--ink-dim); font-weight:600; }
+  .counters b.bumped{ color:var(--warn); }
+  button.ghost{
+    display:inline-flex; align-items:center; gap:.4em; font-size:.8rem; font-weight:600;
+    background:var(--surface); border:1px solid var(--border); color:var(--ink-dim); border-radius:.6rem;
+    padding:.5em .85em; cursor:pointer; box-shadow:var(--shadow);
+  }
+  button.ghost svg{ width:.9em; height:.9em; }
+  button.ghost:hover{ color:var(--ink); border-color:var(--ink-faint); }
+  button.scn:disabled, .link-chip:disabled, button.ghost:disabled, .scn-tab:disabled{
+    opacity:.5; cursor:not-allowed; pointer-events:none;
+  }
+
+  /* ---------- workbench ---------- */
+  .workbench{ display:grid; grid-template-columns:1.35fr 1fr; gap:1.1rem; margin-top:1.3rem; }
+  @media (max-width:980px){ .workbench{ grid-template-columns:1fr; } }
+
+  .panel{ background:var(--surface); border:1px solid var(--border); border-radius:1rem; box-shadow:var(--shadow); }
+  .panel-head{
+    padding:1rem 1.2rem; border-bottom:1px solid var(--border);
+    display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+  }
+  .panel-head-left{ display:flex; align-items:center; gap:.7rem; }
+  .panel-head-icon{
+    width:2.3rem; height:2.3rem; border-radius:.6rem; background:var(--hsm-bg); color:var(--hsm-ink);
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+  .panel-head-icon svg{ width:1.15rem; height:1.15rem; }
+  .panel-head h2{ font-weight:700; font-size:1.05rem; margin:0; letter-spacing:-.01em; display:flex; align-items:center; gap:.5rem; }
+  .verified-badge{
+    display:inline-flex; align-items:center; gap:.35em; font-size:.68rem; font-weight:700; text-transform:uppercase;
+    background:var(--surface-2); color:var(--ink-dim); padding:.25em .6em; border-radius:999px;
+  }
+  .panel-head .sub{ font-size:.8rem; color:var(--ink-faint); margin-top:.15rem; }
+  .panel-actions{ display:flex; gap:.5rem; flex-wrap:wrap; }
+  .panel-body{ padding:1.2rem; }
+
+  .subcard{ border:1px solid var(--border); border-radius:.8rem; background:var(--surface); overflow:hidden; }
+  .subcard-head{
+    display:flex; align-items:center; justify-content:space-between; padding:.6rem .9rem;
+    border-bottom:1px solid var(--border); background:var(--surface-2);
+    font-size:.68rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .copy-btn{
+    display:inline-flex; align-items:center; justify-content:center; width:1.6rem; height:1.6rem;
+    border-radius:.4rem; border:1px solid var(--border); background:var(--surface); color:var(--ink-faint); cursor:pointer;
+  }
+  .copy-btn:hover{ color:var(--accent); border-color:var(--accent); }
+  .copy-btn svg{ width:.85rem; height:.85rem; }
+  .copy-btn.copied{ color:var(--pass); border-color:var(--pass); }
+
+  .hexdump{ font-family:"IBM Plex Mono"; font-size:.72rem; overflow-x:auto; padding:.8rem .9rem; }
+  .hexrow{ display:flex; align-items:center; gap:.65rem; padding:.15rem 0; }
+  .hexoff{ color:var(--ink-faint); width:2.6em; flex:0 0 auto; }
+  .hexbytes{ display:flex; gap:.22rem; flex:0 0 auto; }
+  .hexcell{
+    width:1.75em; height:1.75em; display:flex; align-items:center; justify-content:center;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:.35em;
+    color:var(--ink); cursor:pointer; font-family:inherit; font-size:.95em;
+  }
+  .hexcell:hover{ border-color:var(--accent); color:var(--accent); }
+  .hexcell.touched{ background:var(--warn-bg); color:var(--warn); border-color:var(--warn); }
+  .hexascii{ color:var(--ink-faint); letter-spacing:.12em; flex:0 0 auto; }
+  .hexascii b{ color:var(--warn); font-weight:600; }
+  .hexhelp{ font-size:.76rem; color:var(--ink-faint); margin-top:.9rem; }
+
+  .verify-row{ display:flex; align-items:center; gap:.6rem; margin-top:1rem; flex-wrap:wrap; }
+  button.scn{
+    display:inline-flex; align-items:center; gap:.4em; font-weight:600; font-size:.85rem; cursor:pointer;
+    background:var(--accent); color:var(--accent-ink); border:1px solid var(--accent);
+    padding:.6em 1.1em; border-radius:.6rem; box-shadow:var(--shadow);
+  }
+  button.scn svg{ width:.95em; height:.95em; }
+  button.scn:hover{ filter:brightness(1.05); }
+  .verdict{
+    font-family:"IBM Plex Mono"; font-size:.78rem; padding:.5em .8em; border-radius:.6rem;
+    background:var(--surface-2); color:var(--ink-faint);
+  }
+  .verdict.pass{ background:var(--pass-bg); color:var(--pass); }
+  .verdict.fail{ background:var(--fail-bg); color:var(--fail); }
+
+  .status-row{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:.7rem; margin-top:1.1rem; }
+  @media (max-width:640px){ .status-row{ grid-template-columns:1fr; } }
+  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:.7rem; margin-top:.9rem; }
+  @media (max-width:640px){ .cards{ grid-template-columns:1fr; } }
+
+  .card{ border:1px solid var(--border); border-radius:.8rem; padding:.8rem .9rem; background:var(--surface); }
+  .card h3{
+    margin:0 0 .5rem; display:flex; align-items:center; gap:.4em;
+    font-size:.68rem; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-faint); font-weight:700;
+  }
+  .card h3 svg{ width:.9em; height:.9em; color:var(--accent); }
+  .card .mono{ font-family:"IBM Plex Mono"; font-size:.74rem; word-break:break-all; color:var(--ink); }
+  .card pre{ margin:0; font-family:"IBM Plex Mono"; font-size:.68rem; white-space:pre-wrap; word-break:break-all; color:var(--ink); }
+  .card .kv{ display:flex; justify-content:space-between; gap:1rem; font-size:.78rem; padding:.22rem 0; }
+  .card .kv span:first-child{ color:var(--ink-faint); }
+  .card .kv span:last-child{ font-family:"IBM Plex Mono"; font-weight:600; }
+  .card.status-card{ display:flex; flex-direction:column; align-items:flex-start; gap:.3rem; }
+  .status-check{ width:1.1rem; height:1.1rem; color:var(--pass); }
+  .loaded-pill{
+    display:inline-flex; align-items:center; gap:.35em; font-size:.68rem; font-weight:700;
+    background:var(--pass-bg); color:var(--pass); padding:.28em .6em; border-radius:999px;
+  }
+  .loaded-pill svg{ width:.85em; height:.85em; }
+
+  /* console: intentionally its own fixed dark instrument, in both themes */
+  .console{ background:#0f1115; border:1px solid #23262d; border-radius:1rem; box-shadow:var(--shadow); display:flex; flex-direction:column; min-height:460px; overflow:hidden; }
+  .console-head{
+    padding:1rem 1.2rem; border-bottom:1px solid #23262d; display:flex; align-items:center; gap:.55rem;
+  }
+  .console-head h2{ font-weight:700; font-size:1rem; margin:0; letter-spacing:-.01em; color:#eef1ee; display:flex; align-items:center; gap:.5rem; }
+  .console-head h2 svg{ width:1.05rem; height:1.05rem; color:#4ade80; }
+  .console-live{
+    display:inline-flex; align-items:center; gap:.4em; font-size:.68rem; font-weight:700; color:#4ade80;
+    background:rgba(74,222,128,.12); padding:.25em .55em; border-radius:999px;
+  }
+  .console-clear{
+    margin-left:auto; font-size:.72rem; font-weight:600; color:#8b93a1; background:none;
+    border:1px solid #2a2e37; border-radius:.5rem; padding:.35em .65em; cursor:pointer;
+  }
+  .console-clear:hover{ color:#eef1ee; border-color:#3a3f4a; }
+  .console-body{
+    flex:1 1 auto; padding:.9rem 1.1rem; font-family:"IBM Plex Mono"; font-size:.75rem;
+    color:#bcd8c4; overflow-y:auto; line-height:1.65;
+  }
+  .console-body .line{ white-space:pre-wrap; word-break:break-word; }
+  .console-body .line.hdr{
+    color:#7fe0a3; font-weight:700; margin-top:1rem; padding-bottom:.4rem;
+    border-bottom:1px solid #223027;
+  }
+  .console-body .line.ok{ color:#7fe0a3; }
+  .console-body .line.err{ color:#ff9a8a; }
+  .console-body .line.warn{ color:#e8c26b; }
+  .console-body .line.dim{ color:#5f7a68; }
+  .console-cmd{ display:flex; align-items:center; gap:.5rem; padding:.8rem 1rem; border-top:1px solid #23262d; }
+  .console-cmd span.prompt{ color:#4ade80; font-family:"IBM Plex Mono"; font-size:.8rem; }
+  .console-cmd input{
+    flex:1 1 auto; background:none; border:none; color:#eef1ee; font-family:"IBM Plex Mono"; font-size:.8rem;
+    outline:none;
+  }
+  .console-cmd input::placeholder{ color:#5b6470; }
+  .console-cmd button{
+    background:#1a2620; color:#7fe0a3; border:1px solid #2c3d33; border-radius:.5rem;
+    padding:.4em .8em; font-size:.76rem; font-weight:600; cursor:pointer;
+  }
+  .console-cmd button:hover{ background:#20301f; }
+
+  footer{
+    margin-top:2.4rem; border-top:1px solid var(--border); padding-top:1.2rem;
+    display:flex; flex-wrap:wrap; gap:.4rem 1.6rem; justify-content:center;
+    color:var(--ink-faint); font-size:.78rem;
+  }
+  footer .foot-item{ display:inline-flex; align-items:center; gap:.4em; }
+  footer svg{ width:.95em; height:.95em; }
+</style>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg>
+    </div>
+    <div>
+      <div class="brand-title">Secure Boot Lab</div>
+      <div class="brand-sub">Live In-Browser ECDSA/RSA Verification</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="themeToggle" aria-label="Toggle color theme">
+      <svg class="icon" id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <span id="themeLabel">Theme</span>
+    </button>
+    <label class="algo-wrap">
+      <span>Choose Algorithm</span>
+      <select id="algoSelect" class="algo-select">
+        <option value="ecdsa">ECDSA (REAL)</option>
+        <option value="rsa">RSA (DEMO)</option>
+      </select>
+    </label>
+    <div class="status-pill" id="statusPill">
+      <span class="status-dot pulse" id="statusDot"></span><span id="statusText">All systems ready</span>
+    </div>
+    <div class="info-wrap">
+      <button class="icon-btn" id="infoBtn" aria-label="About this lab" style="padding:.5em .6em">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+      </button>
+      <div class="info-popover" id="infoPopover">
+        <b>What's real vs. simulated:</b> the SHA-256 hashing, ECDSA P-256 verification, and RSA-2048 modular exponentiation on this page are genuine &mdash; computed live in your browser against the exact bytes this lab's <code>setup.sh</code> generated. What's simulated is the hardware: no OTP fuses, no silicon isolation, no tamper-resistant counter &mdash; the "locked" key store and rollback counters are just page state. Same logic as <code>./run.sh</code>, just visible.
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+  <section class="hero-grid">
+    <div class="hero-text">
+      <div class="eyebrow">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg>
+        Secure Boot Verification
+      </div>
+      <h1>Boot Chain Console
+        <svg class="icon title-badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+      </h1>
+      <p class="tagline">Inspect and verify each stage of the boot chain in real time. Every key, hash and signature below is pulled straight from this lab's own <code>setup.sh</code> run.</p>
+
+      <div class="feature-row">
+        <div class="feature">
+          <div class="feature-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6 6.6.6-5 4.4 1.5 6.5L12 16l-5.9 3.5L7.5 13l-5-4.4 6.5-.6z"/></svg></div>
+          <div><b>Real Signatures</b><span>Not simulated</span></div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <div><b>Live Verification</b><span>In your browser</span></div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></div>
+          <div><b>4 Boot Scenarios</b><span>Try and learn</span></div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg></div>
+          <div><b>End-to-End Chain</b><span>ROM &rarr; HSM &rarr; BL2 &rarr; APP</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pipeline-wrap">
+      <div class="pipeline">
+        <div class="node" data-node="rom" id="node-rom">
+          <div class="node-icon node-icon-rom"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></svg></div>
+          <div class="node-label">ROM</div>
+          <div class="node-sub">Immutable root of trust</div>
+          <div class="node-pill" id="pill-rom"><span class="dot"></span><span>always on</span></div>
+        </div>
+
+        <div class="link" id="link-0">
+          <div class="wire"></div><div class="flow"></div>
+          <button class="link-chip" data-link="hsm_fw" id="chip-0">verify hsm_fw</button>
+        </div>
+
+        <div class="keystore-col">
+          <div class="keystore locked" id="keystore">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="10.5" width="14" height="10" rx="1.5"></rect>
+              <path class="shackle" d="M8 10.5V8a4 4 0 0 1 8 0v2.5"></path>
+            </svg>
+          </div>
+          <div class="keystore-caption" id="keystoreCaption">Key Store<br>Locked</div>
+        </div>
+
+        <div class="node" data-node="hsmfw" id="node-hsmfw">
+          <div class="node-icon node-icon-hsmfw"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 3l3 3M14 5l3 3"/></svg></div>
+          <div class="node-label">HSM FW</div>
+          <div class="node-sub">Internal key store</div>
+          <div class="node-pill" id="pill-hsmfw"><span class="dot"></span><span>idle</span></div>
+        </div>
+
+        <div class="link" id="link-1">
+          <div class="wire"></div><div class="flow"></div>
+          <button class="link-chip" data-link="bl2" id="chip-1">verify bl2</button>
+        </div>
+
+        <div class="node" data-node="bl2" id="node-bl2">
+          <div class="node-icon node-icon-bl2"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></svg></div>
+          <div class="node-label">BL2</div>
+          <div class="node-sub">Second-stage loader</div>
+          <div class="node-pill" id="pill-bl2"><span class="dot"></span><span>idle</span></div>
+        </div>
+
+        <div class="link" id="link-2">
+          <div class="wire"></div><div class="flow"></div>
+          <button class="link-chip" data-link="app" id="chip-2">verify app</button>
+        </div>
+
+        <div class="node" data-node="app" id="node-app">
+          <div class="node-icon node-icon-app"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></div>
+          <div class="node-label">APP</div>
+          <div class="node-sub">The application</div>
+          <div class="node-pill" id="pill-app"><span class="dot"></span><span>idle</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="controls" style="margin-top:2rem">
+    <button class="scn-tab" data-scenario="happy">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+      1. Happy Path
+    </button>
+    <button class="scn-tab" data-scenario="corrupt-bl2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4M12 17h.01"/></svg>
+      2. Corrupted BL2
+    </button>
+    <button class="scn-tab" data-scenario="wrong-key">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4M12 17h.01"/></svg>
+      3. Wrong-key HSM FW
+    </button>
+    <button class="scn-tab" data-scenario="rollback">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4M12 17h.01"/></svg>
+      4. Rollback Attack
+    </button>
+    <div class="spacer"></div>
+    <div class="counters" id="countersReadout" title="Anti-rollback counters persist across scenario runs, just like state/rollback_counters.txt in the real lab."></div>
+    <button class="ghost" id="resetBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      Reset Chain
+    </button>
+  </div>
+  <div class="counters" id="schemeNote" style="margin-top:.5rem"></div>
+
+  <div class="workbench">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-head-left">
+          <div class="panel-head-icon" id="inspIcon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 3l3 3M14 5l3 3"/></svg></div>
+          <div>
+            <h2><span id="inspTitle">HSM Firmware</span> <span class="verified-badge" id="inspBadge">Verified by ROM (ECDSA)</span></h2>
+            <div class="sub" id="inspSub">This is the exact check ROM performs on HSM firmware.</div>
+          </div>
+        </div>
+        <div class="panel-actions">
+          <button class="scn" id="verifyBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+            Verify This Image
+          </button>
+          <button class="ghost" id="resetBytesBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+            Reset Bytes
+          </button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="subcard">
+          <div class="subcard-head"><span>Firmware Payload (Hex View)</span><button class="copy-btn" data-copy-target="hexdump" title="Copy hex"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button></div>
+          <div class="hexdump" id="hexdump"></div>
+        </div>
+        <div class="hexhelp">Click any byte to flip it (+1), then verify &mdash; the real, unmodified signature is still used, so its recovered digest no longer matches these bytes: both image identity and signature authorisation fail together, exactly like a real tamper attempt.</div>
+        <div class="verify-row">
+          <div class="verdict" id="verdict">not yet verified</div>
+        </div>
+        <div class="status-row" id="statusRow">
+          <div class="card"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V5l7-3z"/></svg>Manifest (from setup.sh)</h3><div class="mono" id="manifestHashOut">sha256: &hellip;</div></div>
+          <div class="card"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>Computed (this lab)</h3><div class="mono" id="computedHashOut">sha256: &hellip;</div></div>
+          <div class="card status-card"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>Status</h3><div id="statusCardOut" style="font-size:.8rem;color:var(--ink-faint)">not yet verified</div></div>
+        </div>
+        <div id="verifySteps"></div>
+        <div class="cards" id="cards"></div>
+      </div>
+    </div>
+
+    <div class="console">
+      <div class="console-head">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/></svg>Serial Console</h2>
+        <span class="console-live"><span class="dot pulse"></span>Live</span>
+        <button class="console-clear" id="consoleClear">Clear</button>
+      </div>
+      <div class="console-body" id="consoleBody"></div>
+      <div class="console-cmd">
+        <span class="prompt">&gt;</span>
+        <input id="consoleInput" type="text" placeholder="Type a command… (happy, corrupt-bl2, wrong-key, rollback, ecdsa, rsa, reset)" autocomplete="off" spellcheck="false">
+        <button id="consoleRun">Run</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="foot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>All operations run locally in your browser. Nothing leaves your machine.</span>
+    <span class="foot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg>Secure. Transparent. Educational.</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const LAB = {"keys": {"rom_root_pub": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+arkfvxUFtgx0SwLYcu9ybk/eS0k\n2gjNubGEzCd3l9IqzMrB06DiMSVAIU0gaUb4BvDcNqnRtIGc/gR2TPAIuQ==\n-----END PUBLIC KEY-----\n", "oem_bl_pub": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhKpeE/SFTX+1SwTezJPjIanIqaj1\n9AOu6IyGr4avPmz1TwUsAy6IX8mlM5C98Mryve5bKdt4xvc3XJTKvxMGAw==\n-----END PUBLIC KEY-----\n", "oem_app_pub": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEMGZYMO3MJ/Y1i63mgDfcJVQRISfE\nxd4AVnXXPfqN85oimIPYcQSmbJnhkyGWXe6AZqDSUBGlCuJSUJEZR8311w==\n-----END PUBLIC KEY-----\n", "attacker_pub": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEpBQLzmZ6RUyouEqC2QQl8/wrgWZJ\n8kJnRk2JoX2KCp3uZFIXGs590eDh3ksgiBqRRKb7mzLAah1RPajpkjhpKQ==\n-----END PUBLIC KEY-----\n"}, "hsm_fw": {"bin": "SFNNLUZJUk1XQVJFLXYxIDo6IHNpbXVsYXRlZCBoc20gY29yZSBmaXJtd2FyZSBwYXlsb2FkCg==", "bin_corrupt": "SFNNLUZJUk1XQVJFLXYxIDo6IHNpbXVsYXRlZSBoc20gY29yZSBmaXJtd2FyZSBwYXlsb2FkCg==", "sig": "MEYCIQDR2w+Ykpk2G1Au2LCNUQ1M6K0arrWzrddy5kIHCX+q+AIhALy336pr/eplW7Ca3dOl+odsHG9MOJiad2uUwh61DOlQ", "sig_attacker": "MEYCIQCzskrXMslx9LWhdzM7U1PHO1Hmy5BO2AExd8MzHxWIQgIhAPv25RdOfydSSszCjO8IVxOoKqwW+6Cr2pb21kUIQr1S", "manifest": {"component": "hsm_fw", "version": 1, "size": 55, "sha256": "2f0b4e19f320764ab713f54abda57188e90f2b2951fba2efdf637d5ebe966cfb"}}, "bl2": {"bin": "QkwyLUJPT1RMT0FERVItdjEgOjogc2ltdWxhdGVkIHNlY29uZC1zdGFnZSBib290bG9hZGVyIHBheWxvYWQK", "bin_corrupt": "QkwyLUJPT1RMT0FERVItdjEgOjogc2ltdWxhdGVkIHJlY29uZC1zdGFnZSBib290bG9hZGVyIHBheWxvYWQK", "sig": "MEQCICA2ft3/+QNaYHhri7zZdoahun0ER6XaVa+09KABqityAiBx1CVraWHlrCkxEBgR8QL1EC9egmHxieU60GIaSfatRQ==", "manifest": {"component": "bl2", "version": 1, "size": 63, "sha256": "7015104f7e2e32ee3fdb4ece1d71b36436fac34e38beb326645180061fce5be2"}}, "app": {"bin": "QVBQTElDQVRJT04tdjEgOjogc2ltdWxhdGVkIHRydXN0ZWQgYXBwbGljYXRpb24gcGF5bG9hZAo=", "bin_corrupt": "QVBQTElDQVRJT04tdjEgOjogc2ltdWxhdGVkIHVydXN0ZWQgYXBwbGljYXRpb24gcGF5bG9hZAo=", "sig": "MEYCIQCua9wBoU23kNv68ynp7SBXQwjiE7jjrxWyfNwYF6CYDQIhANzeTJen0oSqZ/vxzWwpmZTLN9OaawrLPI+PJg14DiSJ", "manifest": {"component": "app", "version": 1, "size": 56, "sha256": "8b7fa0c0859208799c0625d2967b1934c44e4d3d3a6a0021dfa6440adc928eeb"}, "v2_bin": "QVBQTElDQVRJT04tdjIgOjogc2ltdWxhdGVkIHRydXN0ZWQgYXBwbGljYXRpb24gcGF5bG9hZCAodXBkYXRlZCkK", "v2_sig": "MEUCIHw1spxDM8NFaQNOuCZFnuPujZFR6eTOWiDU1kn0Y43xAiEAgI+fYHYKZS7i/Ikxw4cdjLZiYHoBS9QRqCgbmS1RbbI=", "v2_manifest": {"component": "app", "version": 2, "size": 66, "sha256": "94ac6136857a4ca6c18fa9c6fa5bc22838ff15665dd5f13c0dc1f01fce0bb925"}}};
+
+  // RSA-2048 demo keys, generated separately from the real lab (which uses
+  // ECDSA everywhere), purely so the Inspector can show a genuine PKCS#1 v1.5
+  // decrypt-and-compare next to the real ECDSA algebraic check.
+  //
+  // rsa_root_pub.pem  -- the ONLY key ever used to verify. Mirrors rom_root_pub.
+  // rsa_attacker_*    -- used offline to FORGE the hsm_fw signature for
+  //                      Scenario 3. Its public half is never consulted by the
+  //                      verifier -- exactly like the ECDSA attacker key.
+  const RSA_ROOT = {"pub": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4wyzQHraHcsbEXyh9/OQ\nTCiOJ5Te9cN+Q0duQKIRNaUJQmtOVdt3x1nbEjwgCCIYJIWIRivRtJlqwA3iJvXX\n+++J3iKk3amjlkxqfm3kr/fMRcKv3QKD4ryQjHUvn+zM3oJjp2ASll8PnFuDqpBK\nHVoenViAsc7sy6EMm111dU1Yj/6xEu6732hHXj59CfE9omwO3Oa08POvVNN34hOY\nCyyOoVkFkSPCQXnSXsMEzdyT5W/cotwz+7PBBc1990IisY6lavR+DXEnjNaJ1oP4\nW32SegWItXMjMffu6zJdJb6hpNSq9I41cPvrqszqO1EKk+j4fgwEPC8zdS8P9syP\n7QIDAQAB\n-----END PUBLIC KEY-----\n", "sigs": {"hsm_fw": "GSAx42CwwkirxrnuaG7SyNNCwxEawazYwPiyYcfoxtcjFOEoi2+jtZV7ct9Lb6K0tdklWjGgcLhSxDrge5WtkV1l4WdBFwlU8krOo63vlgSflqXAVZ/G25xNDU+Bq8ic03rM03A5eomEi6kcZJB1UAu//RZBgqoviLzqcyhYSX85+gtuco/9bk9YCTrBtxLr+NcxNJQDarOWDKD0zDiOxAuCWU0mRofpktzQbWNbMfOleIKfw5tMgPVYUnX9NTpT7WU//22U5L7jJ5OiBt4SXJehc07jy6aS6MET5oEf0XPGz2tNH82+o76X3iOQlqtxWTrS7b1jyMvMM8TnJ52FCg==", "bl2": "LS7lSlN5LqfPFD/iK3702vaYiiyI57u9oGgDe8CyxAhugz0uB9g1EJuNvzi2emYNuCgNyb9kYlQrGYI8niqg2ajpND0NBmyegjau1y0u9J5i6SXhuLYENE/fJtCYc5rhHwFX6///S/vkYFmocWzGpvmCYlz4GUh3lgPhMXufeLUuhdvw07+IOx5q1ZsaEedjw3ZR0tm7aDYRlsh6HisyeTsIA5tKQD7odNbX6lCLhqhsjN+FXwwBLLcuxjYqP9a5p3fL4XUMv6qe4ipeD28v8oMtkf1s7jRZ5rjS4dpoh0YBwbW8MD8lVZ9dDIQWjAs1wGX1aQNHPDuLRwfq2O/pPA==", "app": "qxtPSdrhvEfdnE3PVUpSfE3WC8mvZc755I61KdEOK8qvCYUlnGRZV2TlzI+3bz2823/Mej50ykwGz1UXQk8I94NeNilsboRSx6igSoBNh+G6yFPlo+xNHxOSDeNR9zuY79UegJXnxx29uvQw0hGywCHQQ0f5qsGhYR7/S8NnhAQLnR3OOXVi1YZjh0XTxmrBdve/s+cnvZW0H010WcZKr56vfXYuJwd3hYfTsQcBbAu/u33HyYgp5m8ITHXpBQZtF5Ju+8NlMnlR/vP6dE3x+DoJczoiFjKgHVRnXj2r56v7s1oFgAjWDY7q9N75yjGytiE4Yoo5XzkppEU7/1saag==", "app_v2": "b4U7LgMuRLjMDyjZLt6IcTKD54ubtm/phTwoYMVyekGRgRwleTfP6aoLvGKf/+Fp1p6HYmz4f9azFNKBYOiJuDCogT/Fownxh7zXjubPUNxk37a1Dg2xAkVdwGpd0wlKVL548cgiUhFfyWoNQuD8vB52rUESZQU0Bo4NzylBA6VC23npiji8JgLEYQIkjCtP+vZl8LAytK//EXRqdqehH18sQ0Gc+M/HHMLjOtxz6yeYvAeGOhkcjWA/oZI7sklhKzGPnlPKyZk9OxDneXk9vdPHehkHJBOUNMG8tvMWQ+g4+JAQNri2aVzMDrV1u1rcQTV7FCG/KkjLhi6idqkx9A=="}};
+  const RSA_ATTACKER = {"sigs": {"hsm_fw": "Y9YhgXyyO91L5x4fB6FAN368pNvq5fo+95WTtQrHOpHPQyKgFpETeaomWo4RgQ9NVMYDQym9hnUQS+AqV8yTiRsKYEd13j/zK2i0iwEV/GvK3fMeYfjPTwqS4aicnbm6MnTLv3ZJ9uG0gQcRjNf7igY7vcm12oNeEy3U2Pkz5cVlezWmiKNu8kvOTSWxIQ5W14JIGZyvueZ6mIb6bhIrxRIZ/iDHamHY1hwmSUb/xGZTbZhIQVtnVo4bk25v7zdjDK40o7/BSCvDyyLHM+pv/eHQNpJcLFrTPKXj6UJk9+NZ2qdOTehwXq41U5WZV6FpDpzCekKCyyIHOtUcc3bO0w=="}};
+
+  const COMPONENTS = {
+    hsm_fw: { label: "HSM Firmware", verifierName: "ROM", pubKeyName: "rom_root_pub", pubKeyFile: "rom_root_pub.pem", pubKeyHolder: "burned into the boot ROM (the “OTP” root key)", linkIdx: 0, nodeVerifier: "rom", nodeVerified: "hsmfw",
+      icon: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></svg>', iconTile: "rom" },
+    bl2:    { label: "BL2 Bootloader", verifierName: "HSM", pubKeyName: "oem_bl_pub", pubKeyFile: "oem_bl_pub.pem", pubKeyHolder: "held inside the HSM key store — bytes never leave the HSM", linkIdx: 1, nodeVerifier: "hsmfw", nodeVerified: "bl2",
+      icon: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></svg>', iconTile: "bl2" },
+    app:    { label: "Application", verifierName: "BL2", pubKeyName: "oem_app_pub", pubKeyFile: "oem_app_pub.pem", pubKeyHolder: "held by BL2", linkIdx: 2, nodeVerifier: "bl2", nodeVerified: "app",
+      icon: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>', iconTile: "app" },
+  };
+
+  const subtle = crypto.subtle;
+
+  function b64ToBytes(b64){ return Uint8Array.from(atob(b64), c => c.charCodeAt(0)); }
+  function bytesToB64(bytes){ let s = ""; for (const b of bytes) s += String.fromCharCode(b); return btoa(s); }
+  function bytesToHex(bytes){ return Array.from(bytes).map(b => b.toString(16).padStart(2,"0")).join(""); }
+
+  function pemToArrayBuffer(pem){
+    const b64 = pem.replace(/-----BEGIN [^-]+-----/, "").replace(/-----END [^-]+-----/, "").replace(/\s+/g, "");
+    return b64ToBytes(b64).buffer;
+  }
+
+  function derSigToRaw(der){
+    let i = 0;
+    if (der[i++] !== 0x30) throw new Error("expected SEQUENCE");
+    let seqLen = der[i++];
+    if (seqLen & 0x80){ const n = seqLen & 0x7f; seqLen = 0; for (let k=0;k<n;k++) seqLen = (seqLen<<8) | der[i++]; }
+    function readInt(){
+      if (der[i++] !== 0x02) throw new Error("expected INTEGER");
+      let len = der[i++];
+      if (len & 0x80){ const n = len & 0x7f; len = 0; for (let k=0;k<n;k++) len = (len<<8) | der[i++]; }
+      let bytes = der.slice(i, i+len); i += len;
+      let start = 0; while (start < bytes.length-1 && bytes[start] === 0x00) start++;
+      bytes = bytes.slice(start);
+      const out = new Uint8Array(32); out.set(bytes, 32 - bytes.length);
+      return out;
+    }
+    const r = readInt(), s = readInt();
+    const raw = new Uint8Array(64); raw.set(r,0); raw.set(s,32);
+    return raw;
+  }
+
+  const keyCache = {};
+  async function importPub(pemName){
+    if (keyCache[pemName]) return keyCache[pemName];
+    const key = await subtle.importKey("spki", pemToArrayBuffer(LAB.keys[pemName]), { name:"ECDSA", namedCurve:"P-256" }, true, ["verify"]);
+    keyCache[pemName] = key;
+    return key;
+  }
+
+  async function sha256HexBytes(bytes){
+    const digest = await subtle.digest("SHA-256", bytes);
+    return bytesToHex(new Uint8Array(digest));
+  }
+
+  async function verifySigBytes(pemName, sigB64, dataBytes){
+    const key = await importPub(pemName);
+    const rawSig = derSigToRaw(b64ToBytes(sigB64));
+    return subtle.verify({ name:"ECDSA", hash:"SHA-256" }, key, rawSig, dataBytes);
+  }
+
+  // ---------------- RSA demo: literal decrypt-and-compare (PKCS#1 v1.5) ----------------
+  function readTLV(bytes, pos){
+    const tag = bytes[pos];
+    let lenByte = bytes[pos+1], headerLen = 2, len;
+    if (lenByte & 0x80){ const n = lenByte & 0x7f; len = 0; for (let k=0;k<n;k++) len = (len<<8) | bytes[pos+2+k]; headerLen = 2+n; }
+    else { len = lenByte; }
+    const valueStart = pos + headerLen, valueEnd = valueStart + len;
+    return { tag, valueStart, valueEnd, nextPos: valueEnd };
+  }
+  function bytesToBigInt(bytes){
+    let hex = "0x"; for (const b of bytes) hex += b.toString(16).padStart(2,"0");
+    return BigInt(hex);
+  }
+  function bigIntToBytesPadded(n, minLen){
+    let hex = n.toString(16); if (hex.length % 2) hex = "0" + hex;
+    const raw = new Uint8Array(hex.length/2);
+    for (let i=0;i<raw.length;i++) raw[i] = parseInt(hex.substr(i*2,2), 16);
+    if (minLen && raw.length < minLen){
+      const padded = new Uint8Array(minLen); padded.set(raw, minLen - raw.length); return padded;
+    }
+    return raw;
+  }
+  let rsaKeyCache = null;
+  function parseRsaSpki(pem){
+    if (rsaKeyCache) return rsaKeyCache;
+    const der = new Uint8Array(pemToArrayBuffer(pem));
+    const top = readTLV(der, 0);
+    const algId = readTLV(der, top.valueStart);
+    const bitString = readTLV(der, algId.nextPos);
+    const inner = readTLV(der, bitString.valueStart + 1);
+    const nInt = readTLV(der, inner.valueStart);
+    const eInt = readTLV(der, nInt.nextPos);
+    let nBytes = der.slice(nInt.valueStart, nInt.valueEnd);
+    let eBytes = der.slice(eInt.valueStart, eInt.valueEnd);
+    if (nBytes[0] === 0x00) nBytes = nBytes.slice(1);
+    if (eBytes[0] === 0x00) eBytes = eBytes.slice(1);
+    rsaKeyCache = { n: bytesToBigInt(nBytes), e: bytesToBigInt(eBytes), modLen: nBytes.length };
+    return rsaKeyCache;
+  }
+  function modpow(base, exp, mod){
+    let result = 1n; base = base % mod;
+    while (exp > 0n){ if (exp & 1n) result = (result * base) % mod; exp >>= 1n; base = (base * base) % mod; }
+    return result;
+  }
+  // Step 1: decrypts the signature with the RSA ROOT public key (s^e mod n)
+  // and returns the recovered 256-byte encoded message EM. No hashing
+  // involved -- this is the literal "decrypt signature" step RSA is known for.
+  // Verification is ALWAYS performed against RSA_ROOT.pub, never against
+  // whatever key actually produced the signature under test.
+  function rsaDecryptSignature(sigB64){
+    const { n, e, modLen } = parseRsaSpki(RSA_ROOT.pub);
+    const s = bytesToBigInt(b64ToBytes(sigB64));
+    const m = modpow(s, e, n);
+    return bigIntToBytesPadded(m, modLen);
+  }
+
+  // Step 2: PKCS#1 v1.5 padding check: EM must be
+  // 0x00 || 0x01 || 0xFF*(>=8) || 0x00 || DigestInfo
+  function checkPkcs1Padding(em){
+    if (em[0] !== 0x00) return { ok:false, reason:"expected leading byte 0x00, got 0x" + em[0].toString(16).padStart(2,"0") + " at offset 0" };
+    if (em[1] !== 0x01) return { ok:false, reason:"expected block type 0x01, got 0x" + em[1].toString(16).padStart(2,"0") + " at offset 1" };
+    let i = 2;
+    while (i < em.length && em[i] === 0xFF) i++;
+    const psLen = i - 2;
+    if (psLen < 8) return { ok:false, reason:"padding string only " + psLen + " byte(s) of 0xFF (need >= 8)" };
+    if (i >= em.length || em[i] !== 0x00) return { ok:false, reason:"expected 0x00 terminator after padding at offset " + i + ", got " + (i < em.length ? "0x" + em[i].toString(16).padStart(2,"0") : "end of buffer") };
+    return { ok:true, psLen, psEnd: i + 1 };
+  }
+
+  // Step 3: DER DigestInfo parse: SEQUENCE { SEQUENCE { OID sha256, NULL }, OCTET STRING (32 bytes) }
+  const SHA256_OID_HEX = "608648016503040201";
+  function parseDigestInfo(bytes, start){
+    try {
+      const outer = readTLV(bytes, start);
+      if (outer.tag !== 0x30) return { ok:false, reason:"expected SEQUENCE (0x30), got 0x" + outer.tag.toString(16) };
+      const algSeq = readTLV(bytes, outer.valueStart);
+      if (algSeq.tag !== 0x30) return { ok:false, reason:"expected AlgorithmIdentifier SEQUENCE" };
+      const oidNode = readTLV(bytes, algSeq.valueStart);
+      if (oidNode.tag !== 0x06) return { ok:false, reason:"expected OID tag (0x06)" };
+      const oidHex = bytesToHex(bytes.slice(oidNode.valueStart, oidNode.valueEnd));
+      const octetNode = readTLV(bytes, algSeq.nextPos);
+      if (octetNode.tag !== 0x04) return { ok:false, reason:"expected OCTET STRING (0x04) for digest" };
+      const digest = bytes.slice(octetNode.valueStart, octetNode.valueEnd);
+      if (digest.length !== 32) return { ok:false, reason:"digest length " + digest.length + " != 32 bytes" };
+      const oidOk = oidHex === SHA256_OID_HEX;
+      return { ok: oidOk, reason: oidOk ? null : ("unexpected digest algorithm OID " + oidHex), oidHex, digestHex: bytesToHex(digest) };
+    } catch (e){
+      return { ok:false, reason:"DigestInfo did not parse as valid DER: " + e.message };
+    }
+  }
+
+  function sleep(ms){
+    const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    return new Promise(r => setTimeout(r, reduced ? 0 : ms));
+  }
+
+  // ---------------- console log ----------------
+  const consoleBody = document.getElementById("consoleBody");
+  function log(text, cls){
+    const el = document.createElement("div");
+    el.className = "line" + (cls ? " " + cls : "");
+    el.textContent = text;
+    consoleBody.appendChild(el);
+    consoleBody.scrollTop = consoleBody.scrollHeight;
+  }
+  function clearLog(){ consoleBody.innerHTML = ""; }
+  document.getElementById("consoleClear").addEventListener("click", clearLog);
+
+  // ---------------- status pill ----------------
+  const statusPill = document.getElementById("statusPill");
+  const statusText = document.getElementById("statusText");
+  function setStatus(kind, text){
+    statusPill.className = "status-pill" + (kind === "busy" ? " busy" : kind === "halted" ? " halted" : "");
+    statusText.textContent = text;
+  }
+
+  // ---------------- pipeline visuals ----------------
+  const nodeStatusText = { idle:"idle", checking:"checking…", pass:"verified", fail:"halted", unreached:"not reached" };
+  function setNode(id, status){
+    const node = document.getElementById("node-" + id);
+    const pill = document.getElementById("pill-" + id);
+    node.className = "node st-" + status;
+    pill.className = "node-pill st-" + status;
+    const dotCls = status === "checking" ? "dot pulse" : "dot";
+    pill.innerHTML = '<span class="' + dotCls + '"></span><span>' + nodeStatusText[status] + "</span>";
+  }
+  function setLink(idx, status){
+    const link = document.getElementById("link-" + idx);
+    link.className = "link" + (status === "checking" ? " flowing" : status ? " " + status : "");
+  }
+  const keystoreEl = document.getElementById("keystore");
+  const keystoreCaption = document.getElementById("keystoreCaption");
+  function setKeystore(state){
+    keystoreEl.className = "keystore " + state;
+    keystoreCaption.innerHTML = state === "unlocked" ? "Key Store<br>Unlocked" : state === "alarmed" ? "Key Store<br>Denied" : "Key Store<br>Locked";
+  }
+
+  function resetPipeline(){
+    setNode("rom", "idle"); setNode("hsmfw", "idle"); setNode("bl2", "idle"); setNode("app", "idle");
+    setLink(0, ""); setLink(1, ""); setLink(2, "");
+    setKeystore("locked");
+  }
+
+  // ---------------- rollback state ----------------
+  let counters = { hsm_fw: 1, bl2: 1, app: 1 };
+  const countersReadout = document.getElementById("countersReadout");
+  function renderCounters(){
+    countersReadout.innerHTML = "Counters: " + ["hsm_fw","bl2","app"].map(k =>
+      "<b class=\"" + (counters[k] > 1 ? "bumped" : "") + "\">" + k + " v" + counters[k] + "</b>"
+    ).join(" &middot; ");
+  }
+  function logBaseline(){
+    log("rollback baseline going in -- hsm_fw v" + counters.hsm_fw + ", bl2 v" + counters.bl2 + ", app v" + counters.app +
+      (counters.hsm_fw > 1 || counters.bl2 > 1 || counters.app > 1 ? "  (carried over from a previous scenario -- click Reset chain to clear)" : ""), "warn");
+  }
+  function checkRollback(component, candidate){
+    const last = counters[component];
+    if (candidate < last) return { ok:false, last };
+    counters[component] = candidate;
+    renderCounters();
+    return { ok:true, last };
+  }
+
+  // ---------------- unified verification core (single source of truth) ----------------
+  // Every verification -- scenario runs AND the Inspector's manual "Verify
+  // this image" -- goes through this one function. Console and panel both
+  // render from the SAME result object, so they can never disagree.
+  //
+  // Two stages, always both computed and both shown, and BOTH always checked
+  // against the exact same candidate bytes (whatever's actually in hand --
+  // corrupted, tampered, or genuine):
+  //   (a) SHA-256(candidate bytes) == manifest.sha256   -- is this the described image?
+  //   (b) does the signature's digest match SHA-256(candidate bytes)  -- was it authorised?
+  // A signature's recovered/embedded digest is a fixed property of the
+  // (signature, key) pair alone; comparing it against whatever bytes you
+  // actually have is the whole point of verification, so corrupting or
+  // tampering the image fails BOTH stages together, and only a wrong key
+  // (or forged signature) can fail (b) while (a) still passes.
+  function normBytes(x){
+    if (x === undefined || x === null) return undefined;
+    return typeof x === "string" ? b64ToBytes(x) : x;
+  }
+
+  async function verifyCore(component, algorithm, opts){
+    opts = opts || {};
+    const manifest = opts.manifest || LAB[component].manifest;
+    const dataBytes = normBytes(opts.bin) || pristineBytes(component);
+    const computedHash = await sha256HexBytes(dataBytes);
+    const hashOk = computedHash === manifest.sha256;
+
+    let sig;
+    if (algorithm === "ecdsa"){
+      const c = COMPONENTS[component];
+      const sigBytes = normBytes(opts.sig) || b64ToBytes(LAB[component].sig);
+      const sigB64 = bytesToB64(sigBytes);
+      let rHex = "?", sHex = "?";
+      try { const raw = derSigToRaw(sigBytes); rHex = bytesToHex(raw.slice(0,32)); sHex = bytesToHex(raw.slice(32)); } catch(e){}
+      const equationHolds = await verifySigBytes(c.pubKeyName, sigB64, dataBytes);
+      sig = { algorithm:"ecdsa", ok: equationHolds, keyFile: c.pubKeyFile, rHex, sHex };
+    } else {
+      const sigBytes = normBytes(opts.sig) || b64ToBytes(RSA_ROOT.sigs[component]);
+      const em = rsaDecryptSignature(bytesToB64(sigBytes));
+      const padding = checkPkcs1Padding(em);
+      let digestInfo = { ok:false, reason:"skipped (padding invalid)" };
+      if (padding.ok) digestInfo = parseDigestInfo(em, padding.psEnd);
+      const digestsMatch = padding.ok && digestInfo.ok && digestInfo.digestHex === computedHash;
+      const ok = padding.ok && digestInfo.ok && digestsMatch;
+      sig = { algorithm:"rsa", ok, keyFile:"rsa_root_pub.pem", emHex: bytesToHex(em), padding, digestInfo, digestsMatch, sigHex: bytesToHex(sigBytes) };
+    }
+
+    return { component, algorithm, computedHash, manifestHash: manifest.sha256, hashOk, manifest, sig, overallOk: hashOk && sig.ok };
+  }
+
+  // Renders a verifyCore() result to the serial console. Algorithm-specific
+  // line formats; both scenario runs and the Inspector call this, so console
+  // and panel can never disagree.
+  function logVerifyResult(tag, result){
+    log(tag + " manifest sha256 : " + result.manifestHash, "dim");
+    log(tag + " computed sha256 : " + result.computedHash, result.hashOk ? "dim" : "err");
+    log(tag + " (a) image identity: " + (result.hashOk ? "PASS -- hash matches manifest" : "FAIL -- actual hash does not match manifest"), result.hashOk ? "ok" : "err");
+
+    log(tag + " verifying key   : " + result.sig.keyFile, "dim");
+    if (result.sig.algorithm === "ecdsa"){
+      log(tag + " signature (r,s) : " + result.sig.rHex.slice(0,12) + "…  " + result.sig.sHex.slice(0,12) + "…", "dim");
+      log(tag + " ECDSA verify: is (r,s) valid for this hash under " + result.sig.keyFile + "? -> " + (result.sig.ok ? "YES" : "NO"), result.sig.ok ? "ok" : "err");
+      log(tag + " signature verification: " + (result.sig.ok ? "PASS -- (r,s) satisfies the curve equation for the actual image" : "FAIL -- (r,s) does not satisfy the curve equation for the actual image"), result.sig.ok ? "ok" : "err");
+    } else {
+      log(tag + " signature (256 bytes): " + result.sig.sigHex.slice(0,32) + "…", "dim");
+      log(tag + " RSA: computing s^e mod n ...", "dim");
+      log(tag + " decrypted block (EM)  : " + result.sig.emHex.slice(0,32) + "…  (" + (result.sig.emHex.length/2) + " bytes)", "dim");
+      log(tag + " PKCS#1 v1.5 padding: " + (result.sig.padding.ok ? "VALID" : "INVALID (" + result.sig.padding.reason + ")"), result.sig.padding.ok ? "ok" : "err");
+      if (result.sig.padding.ok){
+        log(tag + " DigestInfo OID  : " + (result.sig.digestInfo.ok ? "sha256" : "INVALID -- " + result.sig.digestInfo.reason), result.sig.digestInfo.ok ? "dim" : "err");
+        if (result.sig.digestInfo.ok){
+          log(tag + " recovered digest from signature: " + result.sig.digestInfo.digestHex, "dim");
+          log(tag + " digests match?  -> " + (result.sig.digestsMatch ? "YES" : "NO") + "  (recovered vs. computed sha256 above)", result.sig.digestsMatch ? "ok" : "err");
+          log(tag + " signature verification: " + (result.sig.digestsMatch ? "PASS -- signed digest matches actual image digest" : "FAIL -- signed digest does not match actual image digest"), result.sig.digestsMatch ? "ok" : "err");
+        } else {
+          log(tag + " signature verification: FAIL -- could not parse a digest from the decrypted signature", "err");
+        }
+      } else {
+        log(tag + " recovered digest from signature: NOT AVAILABLE -- padding invalid, decrypted block is garbage", "err");
+        log(tag + " signature verification: FAIL -- signature does not verify with " + result.sig.keyFile, "err");
+      }
+    }
+    log(tag + " (b) signature authorisation: " + (result.sig.ok ? "PASS -- authorised by " + result.sig.keyFile : "FAIL -- NOT authorised under " + result.sig.keyFile), result.sig.ok ? "ok" : "err");
+  }
+
+  const tag = { rom:"[ROM]", hsmfw:"[HSM-FW]", bl2:"[BL2]" };
+
+  async function runVerifiedLink(component, verifierTag, opts){
+    const c = COMPONENTS[component];
+    setLink(c.linkIdx, "checking");
+    log(verifierTag + " verifying image for '" + component + "' (" + currentAlgorithm.toUpperCase() + ") ...", "dim");
+    await sleep(420);
+    const result = await verifyCore(component, currentAlgorithm, opts);
+    logVerifyResult(verifierTag, result);
+    if (!result.overallOk){
+      setLink(c.linkIdx, "fail");
+      return { ok:false, result };
+    }
+    log(verifierTag + " PASS: hash matches, signature authorised", "ok");
+    const rb = checkRollback(component, result.manifest.version);
+    if (!rb.ok){
+      log("  [rollback] candidate version " + result.manifest.version + " is older than last known-good version " + rb.last + " -- possible rollback attack", "err");
+      log(verifierTag + " FAIL: anti-rollback rejected this image", "err");
+      setLink(c.linkIdx, "fail");
+      return { ok:false, result, reason:"rollback" };
+    }
+    log("  [rollback] accepted: counter for '" + component + "' now at v" + result.manifest.version, "dim");
+    setLink(c.linkIdx, "pass");
+    return { ok:true, result };
+  }
+
+  async function halt(fromNode){
+    const order = ["rom","hsmfw","bl2","app"];
+    const start = order.indexOf(fromNode) + 1;
+    for (let i = start; i < order.length; i++) setNode(order[i], "unreached");
+  }
+
+  // ---------------- scenarios ----------------
+  // Header/reset/log-clearing is handled once by the runScenario() dispatcher
+  // below -- these functions only contain the actual run.
+  function attackerSigFor(component){
+    return currentAlgorithm === "ecdsa" ? LAB[component].sig_attacker : RSA_ATTACKER.sigs[component];
+  }
+  function v2SigFor(){
+    return currentAlgorithm === "ecdsa" ? LAB.app.v2_sig : RSA_ROOT.sigs.app_v2;
+  }
+
+  async function scenarioHappy(){
+    log("=== BOOT ROM (immutable root of trust) ===", "hdr");
+    setNode("rom", "checking"); await sleep(200); setNode("rom", "pass");
+    let r = await runVerifiedLink("hsm_fw", tag.rom);
+    if (!r.ok){ setNode("hsmfw","fail"); await halt("hsmfw"); log("RESULT: BOOT HALTED -- HSM firmware not trusted.", "err"); return; }
+    setKeystore("unlocked");
+    log("  [hsm-keystore] key store unlocked -- internal key ready", "dim");
+    setNode("hsmfw", "checking"); await sleep(200); setNode("hsmfw", "pass");
+
+    log("=== HSM FIRMWARE (running) ===", "hdr");
+    r = await runVerifiedLink("bl2", tag.hsmfw);
+    if (!r.ok){ setNode("bl2","fail"); await halt("bl2"); log("RESULT: BOOT HALTED -- BL2 not trusted.", "err"); return; }
+    setNode("bl2", "checking"); await sleep(200); setNode("bl2", "pass");
+
+    log("=== BL2 (running) ===", "hdr");
+    r = await runVerifiedLink("app", tag.bl2);
+    if (!r.ok){ setNode("app","fail"); await halt("app"); log("RESULT: BOOT HALTED -- APP not trusted.", "err"); return; }
+    setNode("app", "checking"); await sleep(200); setNode("app", "pass");
+    log("=== APPLICATION ===", "hdr");
+    log("[APP] Hello from the verified application!", "ok");
+    log("RESULT: BOOT SUCCESSFUL -- full chain of trust verified.", "ok");
+  }
+
+  async function scenarioCorruptBl2(){
+    log("=== BOOT ROM (immutable root of trust) ===", "hdr");
+    setNode("rom", "checking"); await sleep(200); setNode("rom", "pass");
+    let r = await runVerifiedLink("hsm_fw", tag.rom);
+    if (!r.ok){ setNode("hsmfw","fail"); await halt("hsmfw"); return; }
+    setKeystore("unlocked");
+    log("  [hsm-keystore] key store unlocked -- internal key ready", "dim");
+    setNode("hsmfw", "checking"); await sleep(200); setNode("hsmfw", "pass");
+
+    log("=== HSM FIRMWARE (running) ===", "hdr");
+    // Candidate bytes are corrupted, but the real, unmodified bl2.sig is
+    // reused as-is -- its digest was computed over the ORIGINAL bl2.bin, so
+    // it cannot match SHA-256 of the corrupted bytes either. Both stages fail.
+    r = await runVerifiedLink("bl2", tag.hsmfw, { bin: LAB.bl2.bin_corrupt });
+    setNode("bl2", "fail");
+    await halt("bl2");
+    log("RESULT: BOOT HALTED -- chain of trust broken at BL2.", "err");
+  }
+
+  async function scenarioWrongKey(){
+    log("=== BOOT ROM (immutable root of trust) ===", "hdr");
+    setNode("rom", "checking"); await sleep(200); setNode("rom", "pass");
+    const r = await runVerifiedLink("hsm_fw", tag.rom, { sig: attackerSigFor("hsm_fw") });
+    setNode("hsmfw", "fail");
+    setKeystore("alarmed");
+    await halt("hsmfw");
+    log(tag.rom + " HALT: HSM firmware verification failed -- HSM will NOT start.", "err");
+    log(tag.rom + " Keys inside the HSM remain locked and unreachable.", "err");
+    log("RESULT: BOOT HALTED -- chain of trust broken at HSM firmware (signature not authorised, image identity was fine).", "err");
+  }
+
+  async function scenarioRollback(){
+    log("=== SCENARIO 4, PART 1/2: accept a new APP v2 ===", "hdr");
+    log("=== BOOT ROM (immutable root of trust) ===", "hdr");
+    setNode("rom", "checking"); await sleep(150); setNode("rom", "pass");
+    let r = await runVerifiedLink("hsm_fw", tag.rom);
+    if (!r.ok) return;
+    setKeystore("unlocked");
+    setNode("hsmfw", "pass");
+    log("=== HSM FIRMWARE (running) ===", "hdr");
+    r = await runVerifiedLink("bl2", tag.hsmfw);
+    if (!r.ok) return;
+    setNode("bl2", "pass");
+    log("=== BL2 (running) ===", "hdr");
+    r = await runVerifiedLink("app", tag.bl2, { bin: LAB.app.v2_bin, sig: v2SigFor(), manifest: LAB.app.v2_manifest });
+    setNode("app", r.ok ? "pass" : "fail");
+    log("APP counter is now at v" + counters.app + ".", "warn");
+
+    await sleep(900);
+    resetPipeline();
+    log("", "dim");
+    log("=== SCENARIO 4, PART 2/2: attacker replays the OLD, still validly-signed v1 APP ===", "hdr");
+    log("=== BOOT ROM (immutable root of trust) ===", "hdr");
+    setNode("rom", "checking"); await sleep(150); setNode("rom", "pass");
+    r = await runVerifiedLink("hsm_fw", tag.rom);
+    setKeystore("unlocked");
+    setNode("hsmfw", "pass");
+    log("=== HSM FIRMWARE (running) ===", "hdr");
+    r = await runVerifiedLink("bl2", tag.hsmfw);
+    setNode("bl2", "pass");
+    log("=== BL2 (running) ===", "hdr");
+    r = await runVerifiedLink("app", tag.bl2);
+    setNode("app", r.ok ? "pass" : "fail");
+    if (!r.ok) await halt("app");
+    log(r.ok ? "RESULT: BOOT SUCCESSFUL." : "RESULT: BOOT HALTED -- signature and image identity both PASSED; rollback protection rejected the downgrade on version alone.", r.ok ? "ok" : "err");
+  }
+
+  const scenarios = { happy: scenarioHappy, "corrupt-bl2": scenarioCorruptBl2, "wrong-key": scenarioWrongKey, rollback: scenarioRollback };
+  const SCENARIO_META = {
+    happy: { num:1, title:"Happy path (everything valid)" },
+    "corrupt-bl2": { num:2, title:"Corrupted BL2 (HSM must reject)" },
+    "wrong-key": { num:3, title:"HSM firmware re-signed with the attacker's key" },
+    rollback: { num:4, title:"Rollback attack (downgrade APP to older version)" },
+  };
+
+  let currentScenario = null;
+  function updateScenarioButtons(){
+    document.querySelectorAll(".scn-tab[data-scenario]").forEach(b => b.classList.toggle("primary", b.dataset.scenario === currentScenario));
+  }
+
+  async function runScenario(name){
+    currentScenario = name;
+    updateScenarioButtons();
+    resetPipeline();
+    clearLog();
+    const meta = SCENARIO_META[name];
+    log("=== SCENARIO " + meta.num + ": " + meta.title + " (" + currentAlgorithm.toUpperCase() + ") ===", "hdr");
+    logBaseline();
+    setStatus("busy", "Verifying…");
+    await scenarios[name]();
+    const lastNodeOk = document.getElementById("node-app").className.includes("st-pass") &&
+                        !document.getElementById("node-app").className.includes("fail");
+    const anyFail = ["rom","hsmfw","bl2","app"].some(n => document.getElementById("node-"+n).className.includes("st-fail"));
+    setStatus(anyFail ? "halted" : "ok", anyFail ? "Chain Halted" : "All Systems Ready");
+  }
+
+  let running = false;
+  function setBusy(busy){
+    document.querySelectorAll(".scn-tab[data-scenario], .link-chip, #algoSelect, #verifyBtn, #resetBytesBtn, #resetBtn").forEach(b => b.disabled = busy);
+  }
+  document.querySelectorAll(".scn-tab[data-scenario]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (running) return;
+      running = true;
+      setBusy(true);
+      try { await runScenario(btn.dataset.scenario); }
+      finally { setBusy(false); running = false; }
+    });
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    counters = { hsm_fw:1, bl2:1, app:1 };
+    renderCounters();
+    currentScenario = null;
+    updateScenarioButtons();
+    resetPipeline(); clearLog();
+    setStatus("ok", "All Systems Ready");
+    log("Chain and rollback counters reset to v1 baseline (equivalent to re-running ./setup.sh).", "dim");
+  });
+
+  // ---------------- inspector / tamper lab ----------------
+  let currentComponent = "hsm_fw";
+  let currentAlgorithm = "ecdsa";
+  let workingBytes = {};
+  function pristineBytes(component){ return b64ToBytes(LAB[component].bin); }
+  Object.keys(COMPONENTS).forEach(c => workingBytes[c] = pristineBytes(c));
+
+  const hexdumpEl = document.getElementById("hexdump");
+  const cardsEl = document.getElementById("cards");
+  const verdictEl = document.getElementById("verdict");
+  const verifyStepsEl = document.getElementById("verifySteps");
+  const inspTitle = document.getElementById("inspTitle");
+  const inspBadge = document.getElementById("inspBadge");
+  const inspSub = document.getElementById("inspSub");
+  const inspIcon = document.getElementById("inspIcon");
+  const manifestHashOut = document.getElementById("manifestHashOut");
+  const computedHashOut = document.getElementById("computedHashOut");
+  const statusCardOut = document.getElementById("statusCardOut");
+
+  function renderHexdump(){
+    const bytes = workingBytes[currentComponent];
+    const pristine = pristineBytes(currentComponent);
+    hexdumpEl.innerHTML = "";
+    for (let row = 0; row < bytes.length; row += 16){
+      const rowBytes = bytes.slice(row, row + 16);
+      const rowEl = document.createElement("div");
+      rowEl.className = "hexrow";
+      const off = document.createElement("div");
+      off.className = "hexoff";
+      off.textContent = row.toString(16).padStart(4, "0");
+      const bytesWrap = document.createElement("div");
+      bytesWrap.className = "hexbytes";
+      rowBytes.forEach((b, j) => {
+        const idx = row + j;
+        const cell = document.createElement("button");
+        cell.className = "hexcell" + (bytes[idx] !== pristine[idx] ? " touched" : "");
+        cell.textContent = b.toString(16).padStart(2, "0");
+        cell.title = "byte " + idx + " -- click to flip";
+        cell.addEventListener("click", () => {
+          workingBytes[currentComponent][idx] = (workingBytes[currentComponent][idx] + 1) % 256;
+          verdictEl.textContent = "not yet verified";
+          verdictEl.className = "verdict";
+          renderHexdump();
+        });
+        bytesWrap.appendChild(cell);
+      });
+      const ascii = document.createElement("div");
+      ascii.className = "hexascii";
+      ascii.innerHTML = Array.from(rowBytes).map((b,j) => {
+        const idx = row + j;
+        const ch = (b >= 32 && b < 127) ? String.fromCharCode(b) : ".";
+        const changed = b !== pristine[idx];
+        return changed ? "<b>" + ch.replace(/[<&]/g, m => m === "<" ? "&lt;" : "&amp;") + "</b>" : ch.replace(/[<&]/g, m => m === "<" ? "&lt;" : "&amp;");
+      }).join("");
+      rowEl.appendChild(off); rowEl.appendChild(bytesWrap); rowEl.appendChild(ascii);
+      hexdumpEl.appendChild(rowEl);
+    }
+  }
+
+  function renderCards(){
+    const c = COMPONENTS[currentComponent];
+    const data = LAB[currentComponent];
+    manifestHashOut.textContent = "sha256: " + data.manifest.sha256.slice(0,24) + "…";
+    manifestHashOut.title = data.manifest.sha256;
+    const manifestCard =
+      '<div class="card"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V5l7-3z"/></svg>Manifest Details</h3>' +
+        '<div class="kv"><span>component</span><span>' + data.manifest.component + '</span></div>' +
+        '<div class="kv"><span>version</span><span>' + data.manifest.version + '</span></div>' +
+        '<div class="kv"><span>size</span><span>' + data.manifest.size + ' bytes</span></div>' +
+        '<div class="kv"><span>algorithm</span><span>' + currentAlgorithm.toUpperCase() + (currentAlgorithm==="ecdsa"?" (REAL)":" (DEMO)") + '</span></div>' +
+      '</div>';
+
+    if (currentAlgorithm === "ecdsa"){
+      const sigBytes = b64ToBytes(data.sig);
+      let r = "?", s = "?";
+      try { const raw = derSigToRaw(sigBytes); r = bytesToHex(raw.slice(0,32)); s = bytesToHex(raw.slice(32)); } catch(e){}
+      cardsEl.innerHTML =
+        '<div class="card"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6 6.6.6-5 4.4 1.5 6.5L12 16l-5.9 3.5L7.5 13l-5-4.4 6.5-.6z"/></svg>Signature (ECDSA / DER)</h3>' +
+          '<div class="mono">r = ' + r + '</div>' +
+          '<div class="mono">s = ' + s + '</div>' +
+        '</div>' +
+        manifestCard +
+        '<div class="card" style="grid-column:1/-1"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 3l3 3M14 5l3 3"/></svg>Verifying Key &mdash; ' + c.pubKeyFile.toUpperCase() + '<span class="loaded-pill" style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Loaded</span></h3>' +
+          '<div class="mono" style="margin-bottom:.3rem;color:var(--ink-faint)">' + c.pubKeyHolder + '</div>' +
+          '<pre>' + LAB.keys[c.pubKeyName].trim() + '</pre>' +
+        '</div>';
+    } else {
+      const sigBytes = b64ToBytes(RSA_ROOT.sigs[currentComponent]);
+      const { n, e, modLen } = parseRsaSpki(RSA_ROOT.pub);
+      const nHex = n.toString(16);
+      cardsEl.innerHTML =
+        '<div class="card"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6 6.6.6-5 4.4 1.5 6.5L12 16l-5.9 3.5L7.5 13l-5-4.4 6.5-.6z"/></svg>Signature (RSA-2048)</h3>' +
+          '<div class="mono">' + bytesToHex(sigBytes).slice(0,40) + '&hellip;</div>' +
+        '</div>' +
+        manifestCard +
+        '<div class="card" style="grid-column:1/-1"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 3l3 3M14 5l3 3"/></svg>Verifying Key &mdash; RSA_ROOT_PUB.PEM (demo only)<span class="loaded-pill" style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Loaded</span></h3>' +
+          '<div class="mono" style="margin-bottom:.3rem;color:var(--ink-faint)">e = ' + e.toString() + ', n = ' + modLen*8 + '-bit modulus &mdash; not used by the real boot chain</div>' +
+          '<div class="mono" style="word-break:break-all">n = ' + nHex.slice(0,48) + '&hellip;</div>' +
+        '</div>';
+    }
+  }
+
+  function stepRow(label, ok, detail){
+    const badge = ok === null ? "" : ' <b style="color:' + (ok ? "var(--pass)" : "var(--fail)") + '">' + (ok ? "PASS" : "FAIL") + "</b>";
+    return '<div class="kv"><span>' + label + badge + '</span><span class="mono" style="text-align:right;max-width:62%">' + detail + '</span></div>';
+  }
+  function renderVerifySteps(result){
+    let rows = stepRow("(a) Image identity", result.hashOk,
+      "computed " + result.computedHash.slice(0,12) + "&hellip; " + (result.hashOk ? "==" : "!=") + " manifest " + result.manifestHash.slice(0,12) + "&hellip;");
+    if (result.sig.algorithm === "ecdsa"){
+      rows += stepRow("(b) Signature authorisation (ECDSA)", result.sig.ok,
+        "(r,s) " + (result.sig.ok ? "satisfies" : "does NOT satisfy") + " the curve equation under " + result.sig.keyFile);
+    } else {
+      rows += stepRow("Step 1 &mdash; s^e mod n", null, "EM = " + result.sig.emHex.slice(0,20) + "&hellip; (" + (result.sig.emHex.length/2) + " bytes)");
+      rows += stepRow("Step 2 &mdash; PKCS#1 v1.5 padding", result.sig.padding.ok,
+        result.sig.padding.ok ? ("PS length " + result.sig.padding.psLen + " bytes") : result.sig.padding.reason);
+      const step3ok = result.sig.padding.ok ? result.sig.digestInfo.ok : null;
+      rows += stepRow("Step 3 &mdash; DigestInfo (DER)", step3ok,
+        !result.sig.padding.ok ? "skipped (padding invalid)" : (result.sig.digestInfo.ok ? "OID " + result.sig.digestInfo.oidHex + " (sha256)" : result.sig.digestInfo.reason));
+      rows += stepRow("Step 4 &mdash; SHA-256(actual bytes)", null, result.computedHash.slice(0,20) + "&hellip;");
+      const step5ok = (result.sig.padding.ok && result.sig.digestInfo.ok) ? result.sig.digestsMatch : null;
+      rows += stepRow("Step 5 &mdash; compare digests", step5ok,
+        step5ok === null ? "skipped" : (step5ok ? "recovered == computed" : "recovered != computed"));
+      rows += stepRow("(b) Signature authorisation (RSA)", result.sig.ok, "authorised under " + result.sig.keyFile + "?");
+    }
+    verifyStepsEl.innerHTML = '<div class="card" style="margin-top:.9rem"><h3>Verification Steps</h3>' + rows + '</div>';
+  }
+
+  const schemeNoteEl = document.getElementById("schemeNote");
+  function renderSchemeNote(){
+    schemeNoteEl.textContent = currentAlgorithm === "ecdsa"
+      ? "Real key and signature from this lab's own setup.sh -- this is the exact check ROM / HSM / BL2 perform, and what the four scenarios above run."
+      : "Demo-only RSA-2048 key pair, generated separately from the real lab (which uses ECDSA everywhere). Also drives the four scenarios above when selected, so ECDSA and RSA can be compared step for step on the same images.";
+  }
+
+  function refreshInspSub(){
+    const c = COMPONENTS[currentComponent];
+    const keyFile = currentAlgorithm === "ecdsa" ? c.pubKeyFile : "rsa_root_pub.pem";
+    inspTitle.textContent = c.label;
+    inspBadge.textContent = "Verified by " + c.verifierName + " (" + currentAlgorithm.toUpperCase() + ")";
+    inspSub.textContent = "Checked against " + keyFile + " -- this is the exact check " + c.verifierName + " performs.";
+    inspIcon.className = "panel-head-icon";
+    inspIcon.style.background = "var(--" + c.iconTile + "-bg)";
+    inspIcon.style.color = "var(--" + c.iconTile + "-ink)";
+    inspIcon.innerHTML = c.icon;
+  }
+
+  function selectComponent(component){
+    currentComponent = component;
+    refreshInspSub();
+    verdictEl.textContent = "not yet verified";
+    verdictEl.className = "verdict";
+    verifyStepsEl.innerHTML = "";
+    statusCardOut.textContent = "not yet verified";
+    computedHashOut.textContent = "sha256: …";
+    document.querySelectorAll(".link-chip").forEach(chip => chip.classList.toggle("selected", chip.dataset.link === component));
+    renderHexdump();
+    renderCards();
+    renderSchemeNote();
+  }
+
+  document.querySelectorAll(".link-chip").forEach(chip => {
+    chip.addEventListener("click", () => selectComponent(chip.dataset.link));
+  });
+
+  // Algorithm is GLOBAL -- it drives the scenario engine as well as the
+  // Inspector, so switching it re-runs whatever scenario is active from a
+  // clean state instead of leaving the previous algorithm's result on screen.
+  const algoSelect = document.getElementById("algoSelect");
+  async function setAlgorithm(algo){
+    if (algo === currentAlgorithm || running) return;
+    currentAlgorithm = algo;
+    algoSelect.value = algo;
+    verdictEl.textContent = "not yet verified";
+    verdictEl.className = "verdict";
+    verifyStepsEl.innerHTML = "";
+    refreshInspSub();
+    renderCards();
+    renderSchemeNote();
+    if (currentScenario){
+      running = true;
+      setBusy(true);
+      try { await runScenario(currentScenario); }
+      finally { setBusy(false); running = false; }
+    } else {
+      resetPipeline(); clearLog();
+      setStatus("ok", "All Systems Ready");
+      log("Switched verification algorithm to " + algo.toUpperCase() + ".", "warn");
+    }
+  }
+  algoSelect.addEventListener("change", () => setAlgorithm(algoSelect.value));
+
+  document.getElementById("resetBytesBtn").addEventListener("click", () => {
+    workingBytes[currentComponent] = pristineBytes(currentComponent);
+    verdictEl.textContent = "not yet verified";
+    verdictEl.className = "verdict";
+    verifyStepsEl.innerHTML = "";
+    renderHexdump();
+  });
+
+  document.getElementById("verifyBtn").addEventListener("click", async () => {
+    const component = currentComponent;
+    verdictEl.textContent = "verifying…";
+    verdictEl.className = "verdict";
+    const opts = { bin: workingBytes[component] };
+    const itag = "[inspector]";
+    log(itag + " manual verify -- '" + component + "' (" + currentAlgorithm.toUpperCase() + ")", "hdr");
+    const result = await verifyCore(component, currentAlgorithm, opts);
+    logVerifyResult(itag, result);
+    renderVerifySteps(result);
+    computedHashOut.textContent = "sha256: " + result.computedHash.slice(0,24) + "…";
+    computedHashOut.title = result.computedHash;
+    if (result.overallOk){
+      verdictEl.textContent = "PASS -- image identity confirmed and signature authorised";
+      verdictEl.className = "verdict pass";
+      statusCardOut.innerHTML = '<b style="color:var(--pass)">Image Identity</b><br>PASS';
+    } else {
+      verdictEl.textContent = "FAIL -- " + (!result.hashOk ? "image identity check failed" : "signature not authorised under root key");
+      verdictEl.className = "verdict fail";
+      statusCardOut.innerHTML = '<b style="color:var(--fail)">Image Identity</b><br>FAIL';
+    }
+  });
+
+  // ---------------- copy-to-clipboard ----------------
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".copy-btn");
+    if (!btn) return;
+    const targetId = btn.dataset.copyTarget;
+    const text = targetId ? (document.getElementById(targetId) || {}).innerText : "";
+    if (!text) return;
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => {
+      btn.classList.add("copied");
+      setTimeout(() => btn.classList.remove("copied"), 1200);
+    }).catch(() => {});
+  });
+
+  // ---------------- console command input ----------------
+  const consoleInput = document.getElementById("consoleInput");
+  function runCommand(raw){
+    const cmd = raw.trim().toLowerCase();
+    if (!cmd) return;
+    log("> " + raw, "warn");
+    const map = { "1":"happy", "happy":"happy", "happy-path":"happy",
+      "2":"corrupt-bl2", "corrupt-bl2":"corrupt-bl2", "corrupted":"corrupt-bl2", "corrupted-bl2":"corrupt-bl2",
+      "3":"wrong-key", "wrong-key":"wrong-key", "wrongkey":"wrong-key",
+      "4":"rollback", "rollback":"rollback" };
+    if (map[cmd] && !running){
+      document.querySelector('.scn-tab[data-scenario="' + map[cmd] + '"]').click();
+    } else if (cmd === "ecdsa" || cmd === "rsa"){
+      setAlgorithm(cmd);
+    } else if (cmd === "reset" || cmd === "clear"){
+      document.getElementById("resetBtn").click();
+    } else if (cmd === "help"){
+      log("commands: happy | corrupt-bl2 | wrong-key | rollback | ecdsa | rsa | reset", "dim");
+    } else {
+      log("unknown command '" + raw + "' -- try: happy, corrupt-bl2, wrong-key, rollback, ecdsa, rsa, reset, help", "err");
+    }
+  }
+  document.getElementById("consoleRun").addEventListener("click", () => {
+    runCommand(consoleInput.value); consoleInput.value = "";
+  });
+  consoleInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter"){ runCommand(consoleInput.value); consoleInput.value = ""; }
+  });
+
+  // ---------------- info popover ----------------
+  const infoBtn = document.getElementById("infoBtn");
+  const infoPopover = document.getElementById("infoPopover");
+  infoBtn.addEventListener("click", (e) => { e.stopPropagation(); infoPopover.classList.toggle("open"); });
+  document.addEventListener("click", (e) => {
+    if (!infoPopover.contains(e.target) && e.target !== infoBtn) infoPopover.classList.remove("open");
+  });
+
+  // ---------------- theme toggle ----------------
+  const root = document.documentElement;
+  const toggle = document.getElementById("themeToggle");
+  const themeLabel = document.getElementById("themeLabel");
+  const themeIcon = document.getElementById("themeIcon");
+  const SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+  const MOON = '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/>';
+  function applyTheme(t){
+    if (t) root.setAttribute("data-theme", t); else root.removeAttribute("data-theme");
+    themeLabel.textContent = t ? (t === "dark" ? "Dark" : "Light") : "Auto";
+    themeIcon.innerHTML = t === "dark" ? MOON : SUN;
+  }
+  let savedTheme = null;
+  try { savedTheme = localStorage.getItem("bcc-theme"); } catch(e){}
+  applyTheme(savedTheme);
+  toggle.addEventListener("click", () => {
+    const order = [null, "light", "dark"];
+    const cur = root.getAttribute("data-theme");
+    const next = order[(order.indexOf(cur) + 1) % order.length];
+    applyTheme(next);
+    try { if (next) localStorage.setItem("bcc-theme", next); else localStorage.removeItem("bcc-theme"); } catch(e){}
+  });
+
+  // ---------------- initial state ----------------
+  resetPipeline();
+  renderCounters();
+  selectComponent("hsm_fw");
+  setStatus("ok", "All Systems Ready");
+  log("Boot Chain Console ready. All crypto runs live in this tab: ECDSA P-256/SHA-256 via Web Crypto, RSA-2048/PKCS#1 v1.5 via hand-rolled modular exponentiation.", "dim");
+  log("Pick a scenario above, choose an algorithm, or click a 'verify' chip on the pipeline to inspect and tamper with a real image.", "dim");
+})();
+</script>

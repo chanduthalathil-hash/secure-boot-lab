@@ -1,0 +1,7 @@
+bin/
+images/*.bin
+images/*.sig
+images/*.json
+keys/*.pem
+keys/signing_test_keys/*.pem
+state/rollback_counters.txt
