@@ -177,7 +177,11 @@
   .feature span{ display:block; font-size:.74rem; color:var(--ink-faint); }
 
   /* ---------- pipeline ---------- */
-  .pipeline-wrap{ overflow-x:auto; padding-bottom:.3rem; }
+  .pipeline-wrap{
+    overflow-x:auto; padding-bottom:.3rem;
+    scrollbar-width:none; -ms-overflow-style:none;
+  }
+  .pipeline-wrap::-webkit-scrollbar{ display:none; height:0; }
   .pipeline{ display:flex; align-items:stretch; gap:0; min-width:640px; }
   .keystore-col{
     display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
