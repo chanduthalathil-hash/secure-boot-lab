@@ -148,8 +148,10 @@
   /* ---------- page ---------- */
   .page{ max-width:1320px; margin:0 auto; padding:2rem 1.5rem 4rem; }
 
-  .hero-grid{ display:grid; grid-template-columns:1fr 1.15fr; gap:2rem; align-items:start; }
-  @media (max-width:980px){ .hero-grid{ grid-template-columns:1fr; } }
+  /* Hero text gets a capped column so the pipeline (which needs real room for
+     four cards) gets essentially all remaining width, not a fixed fraction. */
+  .hero-grid{ display:grid; grid-template-columns:minmax(240px, 340px) 1fr; gap:2rem; align-items:start; }
+  @media (max-width:1199px){ .hero-grid{ grid-template-columns:1fr; } }
 
   .eyebrow{
     display:flex; align-items:center; gap:.4em;
@@ -178,35 +180,44 @@
 
   /* ---------- pipeline ---------- */
   .pipeline-wrap{
-    overflow-x:auto; padding-bottom:.3rem;
+    overflow-x:auto; padding-bottom:.3rem; width:100%;
+    min-width:0; /* grid items default to min-width:auto (content-based floor)
+                    just like flex items -- without this the grid TRACK itself
+                    would refuse to shrink below the pipeline's natural width. */
     scrollbar-width:none; -ms-overflow-style:none;
   }
   .pipeline-wrap::-webkit-scrollbar{ display:none; height:0; }
-  .pipeline{ display:flex; align-items:stretch; gap:0; min-width:640px; }
+  /* No fixed/min width on the row or its cards -- that was the actual bug:
+     flex items never shrink below min-width regardless of container size, so
+     a hardcoded floor here forced total width past the available column on
+     anything narrower than ~720px. Cards use min-width:0 so flex-shrink can
+     actually do its job; connectors and the keystore stay compact via clamp. */
+  .pipeline{ display:flex; align-items:stretch; gap:0; width:100%; min-width:0; box-sizing:border-box; }
   .keystore-col{
     display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-    width:64px; flex:0 0 auto; padding-top:1.1rem;
+    width:clamp(40px, 6vw, 64px); flex:0 0 auto; padding-top:1.1rem;
   }
   .node{
-    flex:1 1 0; background:var(--surface); border:1px solid var(--border);
-    border-radius:.9rem; padding:1rem 1rem 1.1rem; box-shadow:var(--shadow);
-    position:relative; min-width:130px; transition:box-shadow .3s ease, border-color .3s ease;
+    flex:1 1 0; min-width:0; background:var(--surface); border:1px solid var(--border);
+    border-radius:.9rem; padding:clamp(.65rem,1.6vw,1rem) clamp(.6rem,1.4vw,1rem) clamp(.75rem,1.7vw,1.1rem);
+    box-shadow:var(--shadow); box-sizing:border-box;
+    position:relative; overflow:hidden; transition:box-shadow .3s ease, border-color .3s ease;
   }
   .node.st-pass{ border-color:color-mix(in srgb, var(--pass) 45%, var(--border)); }
   .node.st-fail{ border-color:color-mix(in srgb, var(--fail) 45%, var(--border)); }
   .node.st-checking{ border-color:color-mix(in srgb, var(--warn) 45%, var(--border)); }
   .node.st-unreached{ opacity:.4; }
   .node-icon{
-    width:2.5rem; height:2.5rem; border-radius:.65rem; display:flex; align-items:center; justify-content:center;
-    margin-bottom:.7rem;
+    width:clamp(1.9rem, 4vw, 2.5rem); height:clamp(1.9rem, 4vw, 2.5rem); border-radius:.65rem;
+    display:flex; align-items:center; justify-content:center; margin-bottom:.6rem;
   }
-  .node-icon svg{ width:1.3rem; height:1.3rem; }
+  .node-icon svg{ width:55%; height:55%; }
   .node-icon-rom{ background:var(--rom-bg); color:var(--rom-ink); }
   .node-icon-hsmfw{ background:var(--hsm-bg); color:var(--hsm-ink); }
   .node-icon-bl2{ background:var(--bl2-bg); color:var(--bl2-ink); }
   .node-icon-app{ background:var(--app-bg); color:var(--app-ink); }
-  .node-label{ font-weight:700; font-size:1rem; letter-spacing:-.01em; }
-  .node-sub{ font-size:.76rem; color:var(--ink-faint); margin-top:.2rem; min-height:2.1em; }
+  .node-label{ font-weight:700; font-size:clamp(.82rem, 1.6vw, 1rem); letter-spacing:-.01em; overflow-wrap:anywhere; }
+  .node-sub{ font-size:clamp(.68rem, 1.3vw, .76rem); color:var(--ink-faint); margin-top:.2rem; min-height:2.1em; overflow-wrap:anywhere; }
   .node-pill{
     display:inline-flex; align-items:center; gap:.4em; margin-top:.7rem;
     font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.02em;
@@ -219,7 +230,7 @@
   .dot.pulse{ animation:pulse 1s ease-in-out infinite; }
 
   .link{
-    flex:0 0 46px; display:flex; align-items:center; justify-content:center;
+    flex:0 0 auto; width:clamp(22px, 3.4vw, 46px); display:flex; align-items:center; justify-content:center;
     position:relative; align-self:center; height:2px; margin-top:1.9rem;
   }
   .link .wire{ position:absolute; inset:0; height:2px; top:50%; transform:translateY(-50%); background:var(--border); border-top:2px dashed var(--border); background:none; }
@@ -232,9 +243,11 @@
   .link.pass .wire{ border-top-color:var(--pass); border-top-style:solid; }
   .link.fail .wire{ border-top-color:var(--fail); }
   .link-chip{
-    position:absolute; z-index:1; top:-1.6rem; background:var(--surface); border:1px solid var(--border);
-    border-radius:999px; padding:.22em .6em; font-family:"IBM Plex Mono"; font-size:.62rem;
-    letter-spacing:.02em; color:var(--ink-faint); cursor:pointer; box-shadow:var(--shadow); white-space:nowrap;
+    position:absolute; z-index:1; top:-1.6rem; left:50%; transform:translateX(-50%);
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:999px; padding:.2em .5em; font-family:"IBM Plex Mono"; font-size:clamp(.52rem, 1vw, .62rem);
+    letter-spacing:.02em; color:var(--ink-faint); cursor:pointer; box-shadow:var(--shadow);
+    white-space:nowrap; max-width:12vw; overflow:hidden; text-overflow:ellipsis;
   }
   .link-chip:hover{ color:var(--accent); border-color:var(--accent); }
   .link-chip.selected{ color:var(--accent-ink); background:var(--accent); border-color:var(--accent); }
@@ -256,6 +269,24 @@
   .keystore.alarmed svg{ color:var(--fail); }
   @keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-3px);} 75%{transform:translateX(3px);} }
   .keystore-caption{ font-size:.64rem; text-align:center; color:var(--ink-faint); font-weight:600; line-height:1.25; }
+
+  /* Below 768px there's no honest way to keep 4 cards + connectors in a row
+     without either shrinking them illegibly or scrolling -- so the chain
+     becomes a vertical sequence instead, matching the "no horizontal
+     scrolling on mobile either" requirement. */
+  @media (max-width:767px){
+    .pipeline{ flex-direction:column; gap:.5rem; }
+    .node{ width:100%; flex:0 0 auto; }
+    .link{
+      width:100%; height:auto; margin-top:0; flex-direction:column; gap:.2rem;
+      padding:.1rem 0;
+    }
+    .link .wire, .link .flow{ display:none; }
+    .link-chip{ position:static; top:auto; left:auto; transform:none; }
+    .link::before, .link::after{ content:"↓"; color:var(--ink-faint); font-size:1rem; line-height:1; }
+    .keystore-col{ flex-direction:row; width:100%; justify-content:center; gap:.5rem; padding:.3rem 0; }
+    .keystore{ margin-bottom:0; }
+  }
 
   /* ---------- controls ---------- */
   .controls{ display:flex; flex-wrap:wrap; gap:.55rem; margin-top:1.6rem; align-items:center; }
@@ -286,7 +317,12 @@
   }
 
   /* ---------- workbench ---------- */
+  /* Grid items default to min-width:auto (content-based floor), same as flex
+     items -- without min-width:0 here, the hex-dump viewer's un-wrapped row
+     width bubbles up and forces this whole column (and the page) wider than
+     the viewport, even though the hex dump has its own overflow-x:auto. */
   .workbench{ display:grid; grid-template-columns:1.35fr 1fr; gap:1.1rem; margin-top:1.3rem; }
+  .workbench > *{ min-width:0; }
   @media (max-width:980px){ .workbench{ grid-template-columns:1fr; } }
 
   .panel{ background:var(--surface); border:1px solid var(--border); border-radius:1rem; box-shadow:var(--shadow); }
@@ -323,7 +359,7 @@
   .copy-btn svg{ width:.85rem; height:.85rem; }
   .copy-btn.copied{ color:var(--pass); border-color:var(--pass); }
 
-  .hexdump{ font-family:"IBM Plex Mono"; font-size:.72rem; overflow-x:auto; padding:.8rem .9rem; }
+  .hexdump{ font-family:"IBM Plex Mono"; font-size:.72rem; overflow-x:auto; padding:.8rem .9rem; min-width:0; box-sizing:border-box; }
   .hexrow{ display:flex; align-items:center; gap:.65rem; padding:.15rem 0; }
   .hexoff{ color:var(--ink-faint); width:2.6em; flex:0 0 auto; }
   .hexbytes{ display:flex; gap:.22rem; flex:0 0 auto; }
@@ -507,7 +543,7 @@
 
         <div class="link" id="link-0">
           <div class="wire"></div><div class="flow"></div>
-          <button class="link-chip" data-link="hsm_fw" id="chip-0">verify hsm_fw</button>
+          <button class="link-chip" data-link="hsm_fw" id="chip-0" title="Inspect the hsm_fw verification">hsm_fw</button>
         </div>
 
         <div class="keystore-col">
@@ -529,7 +565,7 @@
 
         <div class="link" id="link-1">
           <div class="wire"></div><div class="flow"></div>
-          <button class="link-chip" data-link="bl2" id="chip-1">verify bl2</button>
+          <button class="link-chip" data-link="bl2" id="chip-1" title="Inspect the bl2 verification">bl2</button>
         </div>
 
         <div class="node" data-node="bl2" id="node-bl2">
@@ -541,7 +577,7 @@
 
         <div class="link" id="link-2">
           <div class="wire"></div><div class="flow"></div>
-          <button class="link-chip" data-link="app" id="chip-2">verify app</button>
+          <button class="link-chip" data-link="app" id="chip-2" title="Inspect the app verification">app</button>
         </div>
 
         <div class="node" data-node="app" id="node-app">
@@ -578,7 +614,7 @@
       Reset Chain
     </button>
   </div>
-  <div class="counters" id="schemeNote" style="margin-top:.5rem"></div>
+  <div class="counters" id="schemeNote" style="margin-top:.5rem; white-space:normal; max-width:70ch"></div>
 
   <div class="workbench">
     <div class="panel">
