@@ -297,7 +297,14 @@
   }
   .scn-tab svg{ width:.95em; height:.95em; }
   .scn-tab:hover{ border-color:var(--ink-faint); color:var(--ink); }
-  .scn-tab.primary{ background:var(--pass); color:#fff; border-color:var(--pass); }
+  /* Each scenario is colored by its outcome type, at rest and when running/active
+     (.primary), so the failure mode is legible at a glance, not just after a click. */
+  .scn-tab.valid{ color:var(--pass); border-color:color-mix(in srgb, var(--pass) 35%, var(--border)); }
+  .scn-tab.valid.primary{ background:var(--pass); color:#fff; border-color:var(--pass); }
+  .scn-tab.corrupt{ color:var(--warn); border-color:color-mix(in srgb, var(--warn) 35%, var(--border)); }
+  .scn-tab.corrupt.primary{ background:var(--warn); color:#1a1206; border-color:var(--warn); }
+  .scn-tab.authfail{ color:var(--hsm-ink); border-color:color-mix(in srgb, var(--hsm-ink) 35%, var(--border)); }
+  .scn-tab.authfail.primary{ background:var(--hsm-ink); color:#fff; border-color:var(--hsm-ink); }
   .scn-tab:focus-visible, .link-chip:focus-visible, .hexcell:focus-visible, .ghost:focus-visible{
     outline:2px solid var(--accent); outline-offset:2px;
   }
@@ -591,27 +598,27 @@
   </section>
 
   <div class="controls" style="margin-top:2rem">
-    <button class="scn-tab" data-scenario="happy">
+    <button class="scn-tab valid" data-scenario="happy" title="Everything is correct">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
-      1. Happy Path
+      1. Valid Boot
     </button>
-    <button class="scn-tab" data-scenario="corrupt-bl2">
+    <button class="scn-tab corrupt" data-scenario="corrupt-bl2" title="Firmware integrity failure">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4M12 17h.01"/></svg>
       2. Corrupted BL2
     </button>
-    <button class="scn-tab" data-scenario="wrong-key">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4M12 17h.01"/></svg>
-      3. Wrong-key HSM FW
+    <button class="scn-tab authfail" data-scenario="wrong-key" title="Authentication failure">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 3l3 3M14 5l3 3"/></svg>
+      3. Wrong Signing Key
     </button>
-    <button class="scn-tab" data-scenario="rollback">
+    <button class="scn-tab" data-scenario="rollback" title="Version replay rejected">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4M12 17h.01"/></svg>
       4. Rollback Attack
     </button>
     <div class="spacer"></div>
     <div class="counters" id="countersReadout" title="Anti-rollback counters persist across scenario runs, just like state/rollback_counters.txt in the real lab."></div>
-    <button class="ghost" id="resetBtn">
+    <button class="ghost" id="resetBtn" title="Return to baseline">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
-      Reset Chain
+      Reset Lab
     </button>
   </div>
   <div class="counters" id="schemeNote" style="margin-top:.5rem; white-space:normal; max-width:70ch"></div>
