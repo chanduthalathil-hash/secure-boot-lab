@@ -482,8 +482,8 @@
     <label class="algo-wrap">
       <span>Choose Algorithm</span>
       <select id="algoSelect" class="algo-select">
+        <option value="rsa" selected>RSA (DEMO)</option>
         <option value="ecdsa">ECDSA (REAL)</option>
-        <option value="rsa">RSA (DEMO)</option>
       </select>
     </label>
     <div class="status-pill" id="statusPill">
@@ -1188,7 +1188,7 @@
 
   // ---------------- inspector / tamper lab ----------------
   let currentComponent = "hsm_fw";
-  let currentAlgorithm = "ecdsa";
+  let currentAlgorithm = "rsa"; // RSA as the default -- more people recognize it than ECDSA
   let workingBytes = {};
   function pristineBytes(component){ return b64ToBytes(LAB[component].bin); }
   Object.keys(COMPONENTS).forEach(c => workingBytes[c] = pristineBytes(c));
