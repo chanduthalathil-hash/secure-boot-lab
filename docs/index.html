@@ -25,6 +25,7 @@
     --hsm-ink: #7c3aed; --hsm-bg: #ede9fe;
     --bl2-ink: #b45309; --bl2-bg: #fef3c7;
     --app-ink: #15803d; --app-bg: #dcfce7;
+    --neutral: #52525b; --neutral-ink: #ffffff;
     --shadow: 0 1px 2px rgba(20,20,20,.04), 0 8px 24px -14px rgba(20,20,20,.18);
   }
   @media (prefers-color-scheme: dark){
@@ -49,6 +50,7 @@
       --hsm-ink: #a78bfa; --hsm-bg: rgba(124,58,237,.18);
       --bl2-ink: #fbbf24; --bl2-bg: rgba(217,119,6,.18);
       --app-ink: #4ade80; --app-bg: rgba(22,163,74,.18);
+      --neutral: #71717a; --neutral-ink: #f4f4f5;
       --shadow: 0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.7);
     }
   }
@@ -73,6 +75,7 @@
     --hsm-ink: #a78bfa; --hsm-bg: rgba(124,58,237,.18);
     --bl2-ink: #fbbf24; --bl2-bg: rgba(217,119,6,.18);
     --app-ink: #4ade80; --app-bg: rgba(22,163,74,.18);
+    --neutral: #71717a; --neutral-ink: #f4f4f5;
     --shadow: 0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.7);
   }
 
@@ -307,11 +310,12 @@
   .scn-tab.authfail.primary{ background:var(--hsm-ink); color:#fff; border-color:var(--hsm-ink); }
   .scn-tab.attack{ color:var(--fail); border-color:color-mix(in srgb, var(--fail) 35%, var(--border)); }
   .scn-tab.attack.primary{ background:var(--fail); color:#fff; border-color:var(--fail); }
-  /* Reset Lab isn't a scenario outcome -- it's a permanent neutral-gray fill
-     (not just an outline like the others) so it reads as deliberately
-     colorless rather than simply unstyled. */
-  .scn-tab.neutral{ background:var(--surface-2); color:var(--ink-dim); border-color:var(--border); }
-  .scn-tab.neutral:hover{ background:var(--surface); color:var(--ink); border-color:var(--ink-faint); }
+  /* Reset Lab isn't a scenario outcome -- it gets a solid, always-visible
+     neutral-gray fill (not a pale tint that disappears against the page
+     background) so it reads as deliberately colored gray, matching the
+     visual weight of the other buttons' solid fills. */
+  .scn-tab.neutral{ background:var(--neutral); color:var(--neutral-ink); border-color:var(--neutral); }
+  .scn-tab.neutral:hover{ filter:brightness(1.1); }
   .scn-tab:focus-visible, .link-chip:focus-visible, .hexcell:focus-visible, .ghost:focus-visible{
     outline:2px solid var(--accent); outline-offset:2px;
   }
