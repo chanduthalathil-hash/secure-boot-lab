@@ -500,8 +500,8 @@
     <label class="algo-wrap">
       <span>Choose Algorithm</span>
       <select id="algoSelect" class="algo-select">
-        <option value="rsa" selected>RSA (REAL)</option>
-        <option value="ecdsa">ECDSA (REAL)</option>
+        <option value="rsa" selected>RSA</option>
+        <option value="ecdsa">ECDSA</option>
       </select>
     </label>
     <div class="status-pill" id="statusPill">
@@ -1289,7 +1289,7 @@
         '<div class="kv"><span>component</span><span>' + data.manifest.component + '</span></div>' +
         '<div class="kv"><span>version</span><span>' + data.manifest.version + '</span></div>' +
         '<div class="kv"><span>size</span><span>' + data.manifest.size + ' bytes</span></div>' +
-        '<div class="kv"><span>algorithm</span><span>' + currentAlgorithm.toUpperCase() + ' (REAL)</span></div>' +
+        '<div class="kv"><span>algorithm</span><span>' + currentAlgorithm.toUpperCase() + '</span></div>' +
       '</div>';
 
     if (currentAlgorithm === "ecdsa"){
