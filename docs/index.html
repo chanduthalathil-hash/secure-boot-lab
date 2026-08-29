@@ -305,6 +305,13 @@
   .scn-tab.corrupt.primary{ background:var(--warn); color:#1a1206; border-color:var(--warn); }
   .scn-tab.authfail{ color:var(--hsm-ink); border-color:color-mix(in srgb, var(--hsm-ink) 35%, var(--border)); }
   .scn-tab.authfail.primary{ background:var(--hsm-ink); color:#fff; border-color:var(--hsm-ink); }
+  .scn-tab.attack{ color:var(--fail); border-color:color-mix(in srgb, var(--fail) 35%, var(--border)); }
+  .scn-tab.attack.primary{ background:var(--fail); color:#fff; border-color:var(--fail); }
+  /* Reset Lab isn't a scenario outcome -- it's a permanent neutral-gray fill
+     (not just an outline like the others) so it reads as deliberately
+     colorless rather than simply unstyled. */
+  .scn-tab.neutral{ background:var(--surface-2); color:var(--ink-dim); border-color:var(--border); }
+  .scn-tab.neutral:hover{ background:var(--surface); color:var(--ink); border-color:var(--ink-faint); }
   .scn-tab:focus-visible, .link-chip:focus-visible, .hexcell:focus-visible, .ghost:focus-visible{
     outline:2px solid var(--accent); outline-offset:2px;
   }
@@ -610,13 +617,13 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 3l3 3M14 5l3 3"/></svg>
       3. Wrong Signing Key
     </button>
-    <button class="scn-tab" data-scenario="rollback" title="Version replay rejected">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4M12 17h.01"/></svg>
+    <button class="scn-tab attack" data-scenario="rollback" title="Version replay rejected">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
       4. Rollback Attack
     </button>
     <div class="spacer"></div>
     <div class="counters" id="countersReadout" title="Anti-rollback counters persist across scenario runs, just like state/rollback_counters.txt in the real lab."></div>
-    <button class="ghost" id="resetBtn" title="Return to baseline">
+    <button class="scn-tab neutral" id="resetBtn" title="Return to baseline">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
       Reset Lab
     </button>
