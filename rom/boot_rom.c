@@ -14,18 +14,23 @@
 #include "boot_rom.h"
 #include "root_of_trust.h"
 #include "../common/verify_common.h"
+#include "../common/boot_algo.h"
 #include "../hsm/hsm_rollback.h"
 #include "../hsm/hsm_fw.h"
 
 int boot_rom_main(void) {
     printf("=== BOOT ROM (immutable root of trust) ===\n");
+    printf("[ROM] algorithm: %s\n", boot_algo_name());
     printf("[ROM] using root-of-trust key: %s\n", rot_public_key_path());
 
     unsigned long hsm_version = 0;
 
+    char sig_path[128];
+    snprintf(sig_path, sizeof(sig_path), "images/hsm_fw%s.sig", boot_algo_suffix());
+
     /* Requirement 1: ROM verifies the HSM firmware. */
     if (!verify_stage_image("ROM", rot_public_key_path(),
-                            "images/hsm_fw.bin", "images/hsm_fw.sig",
+                            "images/hsm_fw.bin", sig_path,
                             "images/hsm_fw_manifest.json", "hsm_fw", &hsm_version)) {
         printf("[ROM] HALT: HSM firmware verification failed -- HSM will NOT start.\n");
         printf("[ROM] Keys inside the HSM remain locked and unreachable.\n");

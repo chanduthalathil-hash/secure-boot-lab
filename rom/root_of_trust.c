@@ -6,10 +6,13 @@
  * from a hardware register. This file is the simulator's stand-in for
  * that immutable anchor.
  */
-#include "root_of_trust.h"
+#include <stdio.h>
 
-#define ROM_ROOT_PUBKEY_PATH "keys/rom_root_pub.pem"
+#include "root_of_trust.h"
+#include "../common/boot_algo.h"
 
 const char *rot_public_key_path(void) {
-    return ROM_ROOT_PUBKEY_PATH;
+    static char path[128];
+    snprintf(path, sizeof(path), "keys/rom_root_pub%s.pem", boot_algo_suffix());
+    return path;
 }

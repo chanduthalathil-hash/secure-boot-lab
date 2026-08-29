@@ -16,6 +16,7 @@ BIN_DIR = bin
 # Shared sources used by the main simulator
 COMMON_SRCS = \
 	common/verify_common.c \
+	common/boot_algo.c \
 	hsm/hsm_rollback.c \
 	hsm/hsm_keystore.c \
 	hsm/hsm_verify.c \
@@ -44,10 +45,12 @@ tests: \
 	$(BIN_DIR)/test_hsm_fw_verify \
 	$(BIN_DIR)/test_bl2_verify \
 	$(BIN_DIR)/test_app_verify \
-	$(BIN_DIR)/test_rollback
+	$(BIN_DIR)/test_rollback \
+	$(BIN_DIR)/test_rsa_verify
 
 TEST_SUPPORT = \
 	common/verify_common.c \
+	common/boot_algo.c \
 	hsm/hsm_rollback.c \
 	hsm/hsm_keystore.c
 
@@ -61,6 +64,9 @@ $(BIN_DIR)/test_app_verify: tests/test_app_verify.c $(TEST_SUPPORT) | $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(BIN_DIR)/test_rollback: tests/test_rollback.c hsm/hsm_rollback.c | $(BIN_DIR)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+$(BIN_DIR)/test_rsa_verify: tests/test_rsa_verify.c common/verify_common.c | $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(BIN_DIR):

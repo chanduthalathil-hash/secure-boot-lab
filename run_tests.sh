@@ -14,6 +14,7 @@ TESTS=(
     bin/test_bl2_verify
     bin/test_app_verify
     bin/test_rollback
+    bin/test_rsa_verify
 )
 
 pass=0

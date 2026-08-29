@@ -11,15 +11,18 @@
 
 #include "hsm_keystore.h"
 #include "../common/verify_common.h"
+#include "../common/boot_algo.h"
 
-/* label -> public key file, resolved internally and never returned */
+/* label -> public key file, resolved internally and never returned.
+ * pubkey_path_fmt takes one %s: the active algorithm's suffix from
+ * boot_algo_suffix() ("" for ECDSA, "_rsa" for RSA). */
 typedef struct {
     const char *label;
-    const char *pubkey_path;
+    const char *pubkey_path_fmt;
 } key_entry_t;
 
 static const key_entry_t g_keys[] = {
-    { "bl2_verify_key", "keys/oem_bl_pub.pem" },
+    { "bl2_verify_key", "keys/oem_bl_pub%s.pem" },
 };
 
 static int g_keystore_ready = 0;
@@ -36,9 +39,11 @@ int hsm_keystore_init(void) {
 }
 
 static const char *resolve_key(const char *label) {
+    static char path[128];
     for (size_t i = 0; i < sizeof(g_keys) / sizeof(g_keys[0]); i++) {
         if (strcmp(g_keys[i].label, label) == 0) {
-            return g_keys[i].pubkey_path;
+            snprintf(path, sizeof(path), g_keys[i].pubkey_path_fmt, boot_algo_suffix());
+            return path;
         }
     }
     return NULL;

@@ -7,11 +7,14 @@
 #include <stdio.h>
 
 #include "rom/boot_rom.h"
+#include "common/boot_algo.h"
 
 int main(void) {
     printf("\n########################################################\n");
     printf("#  Secure Boot Chain Simulator                         #\n");
     printf("#  ROM -> HSM firmware -> BL2 -> APP                    #\n");
+    printf("########################################################\n");
+    printf("  signature algorithm: %s\n", boot_algo_name());
     printf("########################################################\n\n");
 
     int ok = boot_rom_main();

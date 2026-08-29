@@ -68,7 +68,7 @@ firmware is verified" is enforced by construction.
 | Stage hand-off | Jump to a reset vector | One C function calling the next |
 | HSM isolation | Hardware firewall between cores | An API that returns only pass/fail, never key bytes |
 | Anti-rollback counter | Tamper-resistant HW counter / protected NVM | `state/rollback_counters.txt` |
-| Crypto | HW crypto accelerator | OpenSSL software crypto (ECDSA-P256 + SHA-256) |
+| Crypto | HW crypto accelerator | OpenSSL software crypto (ECDSA P-256 or RSA-2048, both + SHA-256) |
 
 The **logic** of the trust chain is 100% real. The parts that need physical
 silicon (immutability, memory isolation, tamper resistance) are modeled at the
@@ -85,17 +85,17 @@ secure_boot_lab/
 ├─ hsm/           hsm_fw, hsm_verify, hsm_keystore, hsm_rollback  — the HSM core
 ├─ bl2/           bl2.c/.h, bl2_verify.c/.h            — second-stage bootloader
 ├─ app/           app_main.c/.h                        — the application
-├─ common/        verify_common.c/.h                   — shared hash+sig+manifest logic
-├─ images/        *.bin, *.sig, *_manifest.json        — firmware images + signatures
-├─ keys/          *.pem  (+ signing_test_keys/)        — the key hierarchy
+├─ common/        verify_common.c/.h, boot_algo.c/.h   — shared hash+sig+manifest logic, algorithm select
+├─ images/        *.bin, *.sig, *_rsa.sig, *_manifest.json — firmware images + both signature sets
+├─ keys/          *.pem, *_rsa.pem (+ signing_test_keys/) — two full key hierarchies, ECDSA and RSA
 ├─ tools/         generate_keys / sign_image / make_manifest / corrupt_image (Python)
-├─ tests/         test_hsm_fw_verify / test_bl2_verify / test_app_verify / test_rollback
+├─ tests/         test_hsm_fw_verify / test_bl2_verify / test_app_verify / test_rollback / test_rsa_verify
 ├─ state/         rollback_counters.txt                — persisted anti-rollback state
 ├─ bin/           build output
 ├─ main.c         entry point (power-on → Boot ROM)
 ├─ Makefile
-├─ setup.sh       generate keys/images/signatures/manifests + negative artifacts
-├─ run.sh         run happy path + 3 failure scenarios
+├─ setup.sh       generate keys/images/signatures/manifests (both algorithms) + negative artifacts
+├─ run.sh         run happy path + 3 failure scenarios, under EACH algorithm
 └─ run_tests.sh   build + run all unit tests
 ```
 
@@ -122,9 +122,40 @@ secure_boot_lab/
 | APP | `keys/oem_app_priv.pem` | `keys/oem_app_pub.pem` | BL2 |
 | (attacker) | `keys/signing_test_keys/attacker_priv.pem` | `attacker_pub.pem` | negative tests only |
 
-All keys are ECDSA P-256. In reality the private keys live offline in a secure
-signing facility and never touch the device; here they're on disk so you can
-experiment.
+All keys above are ECDSA P-256 -- the default. In reality the private keys
+live offline in a secure signing facility and never touch the device; here
+they're on disk so you can experiment.
+
+---
+
+## Choosing the signature algorithm: ECDSA or RSA
+
+`setup.sh` generates **two complete, independent key hierarchies** -- every
+key above again, this time RSA-2048, with a `_rsa` suffix -- and signs every
+image with both, over the exact same bytes:
+
+| Signs | Private key | Verified with (public) |
+|---|---|---|
+| HSM firmware | `keys/hsm_signer_priv_rsa.pem` | `keys/rom_root_pub_rsa.pem` |
+| BL2 | `keys/oem_bl_priv_rsa.pem` | `keys/oem_bl_pub_rsa.pem` |
+| APP | `keys/oem_app_priv_rsa.pem` | `keys/oem_app_pub_rsa.pem` |
+| (attacker) | `keys/signing_test_keys/attacker_priv_rsa.pem` | `attacker_pub_rsa.pem` |
+
+Select which one the simulator boots with via `SECURE_BOOT_ALGO`:
+
+```bash
+./bin/secure_boot_sim                       # ECDSA P-256 (default)
+SECURE_BOOT_ALGO=rsa ./bin/secure_boot_sim  # RSA-2048 / PKCS#1 v1.5
+```
+
+Nothing about the verification *logic* changes between the two --
+`verify_stage_image()` (`common/verify_common.c`) calls OpenSSL's
+`EVP_DigestVerifyInit/Update/Final`, which dispatches on the **type of key**
+it loaded, not on anything this codebase decides. `common/boot_algo.c` only
+picks which key/signature *files* get handed to that same, unmodified
+verifier -- so RSA support here isn't a parallel demo path, it's the same
+trust chain, same C code, running against a different key type. `./run.sh`
+demonstrates all four scenarios under both algorithms back to back.
 
 ---
 
@@ -156,6 +187,8 @@ make tests
 ---
 
 ## The four scenarios (`./run.sh`)
+
+Each of these runs twice -- once under ECDSA, once under RSA -- back to back.
 
 1. **Happy path** — every image valid → boots all the way to APP.
 2. **Corrupted BL2** — a bit-flipped BL2 → the HSM detects the hash mismatch and
@@ -207,6 +240,7 @@ actually understand it.
   a secure system — the "protected" key store and rollback counters are plain
   files. The value is in the trust-chain *logic*, which is faithful to how real
   secure boot works.
-- Crypto is ECDSA P-256 over SHA-256 via OpenSSL's `EVP_DigestVerify`. The
-  Python signer signs the raw image bytes (the library hashes once internally)
-  so it matches the C verifier exactly.
+- Crypto is ECDSA P-256 or RSA-2048/PKCS#1 v1.5, both over SHA-256, via
+  OpenSSL's `EVP_DigestVerify`. The Python signer signs the raw image bytes
+  (the library hashes once internally) so it matches the C verifier exactly,
+  and auto-detects which algorithm to use from the private key's own type.

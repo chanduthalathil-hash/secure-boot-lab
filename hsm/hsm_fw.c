@@ -11,6 +11,7 @@
 #include "hsm_fw.h"
 #include "hsm_keystore.h"
 #include "hsm_verify.h"
+#include "../common/boot_algo.h"
 #include "../bl2/bl2.h"
 
 int hsm_fw_start(void) {
@@ -22,8 +23,11 @@ int hsm_fw_start(void) {
         return 0;
     }
 
+    char sig_path[128];
+    snprintf(sig_path, sizeof(sig_path), "images/bl2%s.sig", boot_algo_suffix());
+
     /* Verify the next stage (BL2): signature via internal key + rollback. */
-    if (!hsm_verify_bl2("images/bl2.bin", "images/bl2.sig", "images/bl2_manifest.json")) {
+    if (!hsm_verify_bl2("images/bl2.bin", sig_path, "images/bl2_manifest.json")) {
         printf("[HSM-FW] HALT: BL2 verification failed -- not handing off control\n");
         return 0;
     }

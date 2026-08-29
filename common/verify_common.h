@@ -33,8 +33,14 @@ int manifest_parse(const char *manifest_path, manifest_t *out);
  *   1. parses the manifest
  *   2. checks manifest.component matches expected_component (if non-NULL)
  *   3. recomputes SHA-256 of the image file and compares to manifest.sha256
- *   4. verifies the ECDSA-P256-SHA256 signature in sig_path against the
- *      image bytes, using the public key in pubkey_pem_path
+ *   4. verifies the signature in sig_path against the image bytes, using
+ *      the public key in pubkey_pem_path
+ *
+ * Step 4 works for EITHER ECDSA-P256 or RSA-2048/PKCS#1 v1.5 signatures,
+ * unmodified -- OpenSSL's EVP_DigestVerify* API dispatches on the type of
+ * key it loads from pubkey_pem_path, not on anything this code decides.
+ * Which algorithm's key/signature files get passed in is decided by the
+ * caller via common/boot_algo.h, not by this function.
  *
  * On success, returns 1 and writes the manifest's version number into
  * *out_version (needed by the caller for the anti-rollback check).

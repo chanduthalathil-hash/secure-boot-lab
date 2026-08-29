@@ -500,7 +500,7 @@
     <label class="algo-wrap">
       <span>Choose Algorithm</span>
       <select id="algoSelect" class="algo-select">
-        <option value="rsa" selected>RSA (DEMO)</option>
+        <option value="rsa" selected>RSA (REAL)</option>
         <option value="ecdsa">ECDSA (REAL)</option>
       </select>
     </label>
@@ -701,23 +701,30 @@
 
   const LAB = {"keys": {"rom_root_pub": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+arkfvxUFtgx0SwLYcu9ybk/eS0k\n2gjNubGEzCd3l9IqzMrB06DiMSVAIU0gaUb4BvDcNqnRtIGc/gR2TPAIuQ==\n-----END PUBLIC KEY-----\n", "oem_bl_pub": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhKpeE/SFTX+1SwTezJPjIanIqaj1\n9AOu6IyGr4avPmz1TwUsAy6IX8mlM5C98Mryve5bKdt4xvc3XJTKvxMGAw==\n-----END PUBLIC KEY-----\n", "oem_app_pub": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEMGZYMO3MJ/Y1i63mgDfcJVQRISfE\nxd4AVnXXPfqN85oimIPYcQSmbJnhkyGWXe6AZqDSUBGlCuJSUJEZR8311w==\n-----END PUBLIC KEY-----\n", "attacker_pub": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEpBQLzmZ6RUyouEqC2QQl8/wrgWZJ\n8kJnRk2JoX2KCp3uZFIXGs590eDh3ksgiBqRRKb7mzLAah1RPajpkjhpKQ==\n-----END PUBLIC KEY-----\n"}, "hsm_fw": {"bin": "SFNNLUZJUk1XQVJFLXYxIDo6IHNpbXVsYXRlZCBoc20gY29yZSBmaXJtd2FyZSBwYXlsb2FkCg==", "bin_corrupt": "SFNNLUZJUk1XQVJFLXYxIDo6IHNpbXVsYXRlZSBoc20gY29yZSBmaXJtd2FyZSBwYXlsb2FkCg==", "sig": "MEYCIQDR2w+Ykpk2G1Au2LCNUQ1M6K0arrWzrddy5kIHCX+q+AIhALy336pr/eplW7Ca3dOl+odsHG9MOJiad2uUwh61DOlQ", "sig_attacker": "MEYCIQCzskrXMslx9LWhdzM7U1PHO1Hmy5BO2AExd8MzHxWIQgIhAPv25RdOfydSSszCjO8IVxOoKqwW+6Cr2pb21kUIQr1S", "manifest": {"component": "hsm_fw", "version": 1, "size": 55, "sha256": "2f0b4e19f320764ab713f54abda57188e90f2b2951fba2efdf637d5ebe966cfb"}}, "bl2": {"bin": "QkwyLUJPT1RMT0FERVItdjEgOjogc2ltdWxhdGVkIHNlY29uZC1zdGFnZSBib290bG9hZGVyIHBheWxvYWQK", "bin_corrupt": "QkwyLUJPT1RMT0FERVItdjEgOjogc2ltdWxhdGVkIHJlY29uZC1zdGFnZSBib290bG9hZGVyIHBheWxvYWQK", "sig": "MEQCICA2ft3/+QNaYHhri7zZdoahun0ER6XaVa+09KABqityAiBx1CVraWHlrCkxEBgR8QL1EC9egmHxieU60GIaSfatRQ==", "manifest": {"component": "bl2", "version": 1, "size": 63, "sha256": "7015104f7e2e32ee3fdb4ece1d71b36436fac34e38beb326645180061fce5be2"}}, "app": {"bin": "QVBQTElDQVRJT04tdjEgOjogc2ltdWxhdGVkIHRydXN0ZWQgYXBwbGljYXRpb24gcGF5bG9hZAo=", "bin_corrupt": "QVBQTElDQVRJT04tdjEgOjogc2ltdWxhdGVkIHVydXN0ZWQgYXBwbGljYXRpb24gcGF5bG9hZAo=", "sig": "MEYCIQCua9wBoU23kNv68ynp7SBXQwjiE7jjrxWyfNwYF6CYDQIhANzeTJen0oSqZ/vxzWwpmZTLN9OaawrLPI+PJg14DiSJ", "manifest": {"component": "app", "version": 1, "size": 56, "sha256": "8b7fa0c0859208799c0625d2967b1934c44e4d3d3a6a0021dfa6440adc928eeb"}, "v2_bin": "QVBQTElDQVRJT04tdjIgOjogc2ltdWxhdGVkIHRydXN0ZWQgYXBwbGljYXRpb24gcGF5bG9hZCAodXBkYXRlZCkK", "v2_sig": "MEUCIHw1spxDM8NFaQNOuCZFnuPujZFR6eTOWiDU1kn0Y43xAiEAgI+fYHYKZS7i/Ikxw4cdjLZiYHoBS9QRqCgbmS1RbbI=", "v2_manifest": {"component": "app", "version": 2, "size": 66, "sha256": "94ac6136857a4ca6c18fa9c6fa5bc22838ff15665dd5f13c0dc1f01fce0bb925"}}};
 
-  // RSA-2048 demo keys, generated separately from the real lab (which uses
-  // ECDSA everywhere), purely so the Inspector can show a genuine PKCS#1 v1.5
-  // decrypt-and-compare next to the real ECDSA algebraic check.
+  // Real RSA-2048/PKCS#1 v1.5 keys and signatures, pulled straight from this
+  // lab's own setup.sh -- the exact same run that generated the ECDSA data
+  // above. setup.sh generates BOTH full key hierarchies side by side; the
+  // simulator boots with either one via SECURE_BOOT_ALGO=rsa. See
+  // common/boot_algo.c and README.md, "Choosing the signature algorithm".
   //
-  // rsa_root_pub.pem  -- the ONLY key ever used to verify. Mirrors rom_root_pub.
-  // rsa_attacker_*    -- used offline to FORGE the hsm_fw signature for
-  //                      Scenario 3. Its public half is never consulted by the
-  //                      verifier -- exactly like the ECDSA attacker key.
-  const RSA_ROOT = {"pub": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4wyzQHraHcsbEXyh9/OQ\nTCiOJ5Te9cN+Q0duQKIRNaUJQmtOVdt3x1nbEjwgCCIYJIWIRivRtJlqwA3iJvXX\n+++J3iKk3amjlkxqfm3kr/fMRcKv3QKD4ryQjHUvn+zM3oJjp2ASll8PnFuDqpBK\nHVoenViAsc7sy6EMm111dU1Yj/6xEu6732hHXj59CfE9omwO3Oa08POvVNN34hOY\nCyyOoVkFkSPCQXnSXsMEzdyT5W/cotwz+7PBBc1990IisY6lavR+DXEnjNaJ1oP4\nW32SegWItXMjMffu6zJdJb6hpNSq9I41cPvrqszqO1EKk+j4fgwEPC8zdS8P9syP\n7QIDAQAB\n-----END PUBLIC KEY-----\n", "sigs": {"hsm_fw": "GSAx42CwwkirxrnuaG7SyNNCwxEawazYwPiyYcfoxtcjFOEoi2+jtZV7ct9Lb6K0tdklWjGgcLhSxDrge5WtkV1l4WdBFwlU8krOo63vlgSflqXAVZ/G25xNDU+Bq8ic03rM03A5eomEi6kcZJB1UAu//RZBgqoviLzqcyhYSX85+gtuco/9bk9YCTrBtxLr+NcxNJQDarOWDKD0zDiOxAuCWU0mRofpktzQbWNbMfOleIKfw5tMgPVYUnX9NTpT7WU//22U5L7jJ5OiBt4SXJehc07jy6aS6MET5oEf0XPGz2tNH82+o76X3iOQlqtxWTrS7b1jyMvMM8TnJ52FCg==", "bl2": "LS7lSlN5LqfPFD/iK3702vaYiiyI57u9oGgDe8CyxAhugz0uB9g1EJuNvzi2emYNuCgNyb9kYlQrGYI8niqg2ajpND0NBmyegjau1y0u9J5i6SXhuLYENE/fJtCYc5rhHwFX6///S/vkYFmocWzGpvmCYlz4GUh3lgPhMXufeLUuhdvw07+IOx5q1ZsaEedjw3ZR0tm7aDYRlsh6HisyeTsIA5tKQD7odNbX6lCLhqhsjN+FXwwBLLcuxjYqP9a5p3fL4XUMv6qe4ipeD28v8oMtkf1s7jRZ5rjS4dpoh0YBwbW8MD8lVZ9dDIQWjAs1wGX1aQNHPDuLRwfq2O/pPA==", "app": "qxtPSdrhvEfdnE3PVUpSfE3WC8mvZc755I61KdEOK8qvCYUlnGRZV2TlzI+3bz2823/Mej50ykwGz1UXQk8I94NeNilsboRSx6igSoBNh+G6yFPlo+xNHxOSDeNR9zuY79UegJXnxx29uvQw0hGywCHQQ0f5qsGhYR7/S8NnhAQLnR3OOXVi1YZjh0XTxmrBdve/s+cnvZW0H010WcZKr56vfXYuJwd3hYfTsQcBbAu/u33HyYgp5m8ITHXpBQZtF5Ju+8NlMnlR/vP6dE3x+DoJczoiFjKgHVRnXj2r56v7s1oFgAjWDY7q9N75yjGytiE4Yoo5XzkppEU7/1saag==", "app_v2": "b4U7LgMuRLjMDyjZLt6IcTKD54ubtm/phTwoYMVyekGRgRwleTfP6aoLvGKf/+Fp1p6HYmz4f9azFNKBYOiJuDCogT/Fownxh7zXjubPUNxk37a1Dg2xAkVdwGpd0wlKVL548cgiUhFfyWoNQuD8vB52rUESZQU0Bo4NzylBA6VC23npiji8JgLEYQIkjCtP+vZl8LAytK//EXRqdqehH18sQ0Gc+M/HHMLjOtxz6yeYvAeGOhkcjWA/oZI7sklhKzGPnlPKyZk9OxDneXk9vdPHehkHJBOUNMG8tvMWQ+g4+JAQNri2aVzMDrV1u1rcQTV7FCG/KkjLhi6idqkx9A=="}};
-  const RSA_ATTACKER = {"sigs": {"hsm_fw": "Y9YhgXyyO91L5x4fB6FAN368pNvq5fo+95WTtQrHOpHPQyKgFpETeaomWo4RgQ9NVMYDQym9hnUQS+AqV8yTiRsKYEd13j/zK2i0iwEV/GvK3fMeYfjPTwqS4aicnbm6MnTLv3ZJ9uG0gQcRjNf7igY7vcm12oNeEy3U2Pkz5cVlezWmiKNu8kvOTSWxIQ5W14JIGZyvueZ6mIb6bhIrxRIZ/iDHamHY1hwmSUb/xGZTbZhIQVtnVo4bk25v7zdjDK40o7/BSCvDyyLHM+pv/eHQNpJcLFrTPKXj6UJk9+NZ2qdOTehwXq41U5WZV6FpDpzCekKCyyIHOtUcc3bO0w=="}};
+  // Real per-component public keys (ROM's, HSM's, BL2's -- one each, exactly
+  // mirroring the ECDSA hierarchy, not one shared key).
+  // rsa_attacker_* -- used offline to FORGE the hsm_fw signature for
+  //                   Scenario 3. Its public half is never consulted by the
+  //                   verifier -- exactly like the ECDSA attacker key.
+  const RSA_KEYS = {"root_pub": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt+xlTu7sLG8gZIzkps3j\nl1ncaF9Fpx81kMKn1RH3IbX+qz2d90TuioflZqEeLLn+4NbdTcsV/2BAiUHA8W7k\n7IZwOuyacD42B6IbUyB+PfjlTySK9rkCafdYQdYc0/zF2ZjE9IYZypMyPcFGp7FI\n8iD46Mp8RZ2RUMTGQbSFfHidtkGo7k8ThUEktup/FAg3mHad7ub2RT6/T8HzC4xb\nWMsWVVH/CulIHHcMAG5dJnH3PrKSt7JnTXuXmTT+0DyowCLWqq/gEbk72Racy8RQ\nfO33JaBXahObxTISs535uIXZlGixfsari4GDMwUcq+pq8N47/9D49OenUsx++E6K\nKwIDAQAB\n-----END PUBLIC KEY-----\n", "bl_pub": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuB8am6YTlYXjciaF62dM\naui86PLwn0m3zRNmFIKVST1J1DTGHSWNnvDv5DWxTPT7E4XU5jYVzDPQ8N3VC535\n9mIY4pbJOhLiOV3tixiXVo3uPAr1HRsyq30zFPKEkB7Q2UXz7H0XqXCirOMRH9tK\nrOq6zQWy+VH23YvWDxsLTHGW3sjM2rraoLPSDPfaIplUT7B8do+d2IOl3uGgeHaU\nyYtI2CIFDP5/4AHP3IEcNt2QQh8YiRCvHhDOTH7YkiW3tHs/1V/47uxrcKBuXCqr\n5mEXPf+3QPVpBD0wibK7Us7GadvCInHl4rv82cehn107LLMIfe0lz16D5zlDyqt5\nAQIDAQAB\n-----END PUBLIC KEY-----\n", "app_pub": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtUTs+iHOL/XVaJFE07VK\nYTnFzp+y+vbBy0/OsKQTpX8Lsb0jD77lqEo0mBxEtKrLm48NRM9O4mRFD3t6Kf2X\n4J9PuP97BjOJlirf5J2HOUYhWlHJ0TZrqpDsIm7MAkKJLHacFQsG+JuSA2kCICoE\nbACKOaRuYpZ9Fk7uJ+51iR7ug9eR8JMg9FFvJ641EAbAODA32/lu7J24pOla83P3\nq0o3EJQn5Rab5PA0UWRel7KtLn7m3G2wtKfGTWC8SpXToE67au0a2s8Htp2Z3sVY\nz8nJTUG7HycA8CeIMXmfNRsdF7rI1XXxYXfE6Bhl8j7sTKYVFg4fZ2+ctTRLVrGR\nlwIDAQAB\n-----END PUBLIC KEY-----\n"};
+  const RSA_SIGS = {"hsm_fw": "MkB5dPMqu2t+6sqXlksdES2gzL248h/PBbqMaqbGRw1rL4DEEP5MyR2J8qi4vgc/45eYdCxoELSM73u16MaLum6r1kaU+gyO5fcghemhU/QZQvB7AH+1qu+5uU5Qn0YzvLuS2+PoDnxSKcVNYUi1B9Fe5VZvxPF9EleHMeHuukdWC2iXpt1FUe5Z9zievlFxI1RzyHAU+M05vfrKA8CJiuO23lt67eTiN0bC379t+Lwg8aX9+UBINLj5kpM8ILYyK6UzG/YZYlrzcNMgb+4/rIQ9ZSrcN5UG20g+9YT9tplRcLyfE0/l0Wy9RWPzCcJjszxDqQxOWWW5nwYr0GsC1Q==", "bl2": "iV0s9Rx296O+APo14lySMNdqP3cbS6sTU0zjxB63ew2WV1DyL8L6rijV5ZxBiniHae50BNAuxHcLa25t9C8PDZmgUY0o/E4/qviHoNV3ocYHnjQueIiKY7VB5yDIb2zLucsZEojpQ/nadUqilh0mU75iBECWAY7kHW5eVNEelThCSlT2xsUrbZqLLn1eNr6/RzI9NzLmt944okeESmsfvJjZQ2WcM1EulGFzBZEcllldgOU3XxFPfBH0sAmPnjHO5pSdYg/pO8RjpgR/87y4f/iZFveKSrFAiIP9iJmcQYdO6ZHzGkCAZbiJ3TNqW+X1iAOYoz0AiMI1k+H33FgNQA==", "app": "PPNTnxhnTrRe3SyU1t+gEgJQAahXEO6wPmqhuD28FdMKsOi/J/3Wa23ptR6Cmy3XBVMa+j+EgSzRTrtKI12ZrdqdlpK3kl7I4DvzEC0oMlXmbnW+YgOhFcOqOsnzBk1P21RLsGcYmx5NX/83Thd2T3v9d4cgf4ZI1+Nh1rqTMpz6oMo/rxD+ZLOVsXFI92s1U2WRd4UMsT5XmO1c72z1IOK5rQnv6pbEU7D+aPmvxQwfEwo7tdtJ99dlaGcmyd6tMAb3ve9MI3YGcKPzzghYvs1naInLn2UAKALlwHdxCl7ZdtDhlBbjd+XZMK0fV/Dl1EtHP9b9uFZ9Sdvdgly6Uw==", "app_v2": "WlH/DB8kqCkcujc5yQa5Vf7cOBcTukxFEapnnZRCHp8r2rpLes4qQFHN2mQgtpOkXNvZ8Ld7rB26ajSAA7zmvkMKGO+YbKbW4svFxbfTTF/g5elIiDlZ/0igPYv7lGWJ6A+xX0buCiqW+6x3UY58gjvYjlH/orwCqlqBG93jomvZHb8NfDGDAWRRQ6Z5y61qju19yclWydTujsfB49ypMYb70W40Tca11m66ljTzL8lY4gjTAneI47EQaSJQ1zCC7L2IxaSsAEUSxg3Mbn3IEpwL9vpmorHya/m4zBfKxxf39qevnyPJmHiK3Tl2X4+Tz3FwRblg3bLdFzUiKwMryg=="};
+  const RSA_ATTACKER_SIG_HSM_FW = "SkgfwzO0JEJQClC6ErxrV7m50+QpO/q+qXdQDSh4dGzpUGMO1Ij7Z4excM1jl8aPuZO0ztuAN8AzUsq69AY/x2dSNvIx804atOo3aFymXTnYXivrfViDddOphvhhzupmekFSyRx6rKu4+6pnUchoSBDHMfFeOYXLFh1aF/zEvDvjv6MytoE0PYv+F1u6rdo+oPteUDc4OjEmiBJt6YgxtPXTRn0W5cnWx6ggV1mVCQctsTYORqs6kV6mEuD1xB3X/6iOCK47Cx4ak6pagpy7m/yeVOXGRVl4A2l7q3eaH5OtTSLfoK+ogJ+fUnT4Kq2bMOGDgkXcPcp4g/wYIDdL6g==";
 
   const COMPONENTS = {
     hsm_fw: { label: "HSM Firmware", verifierName: "ROM", pubKeyName: "rom_root_pub", pubKeyFile: "rom_root_pub.pem", pubKeyHolder: "burned into the boot ROM (the “OTP” root key)", linkIdx: 0, nodeVerifier: "rom", nodeVerified: "hsmfw",
+      rsaKeyName: "root_pub", rsaKeyFile: "rom_root_pub_rsa.pem",
       icon: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></svg>', iconTile: "rom" },
     bl2:    { label: "BL2 Bootloader", verifierName: "HSM", pubKeyName: "oem_bl_pub", pubKeyFile: "oem_bl_pub.pem", pubKeyHolder: "held inside the HSM key store — bytes never leave the HSM", linkIdx: 1, nodeVerifier: "hsmfw", nodeVerified: "bl2",
+      rsaKeyName: "bl_pub", rsaKeyFile: "oem_bl_pub_rsa.pem",
       icon: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></svg>', iconTile: "bl2" },
     app:    { label: "Application", verifierName: "BL2", pubKeyName: "oem_app_pub", pubKeyFile: "oem_app_pub.pem", pubKeyHolder: "held by BL2", linkIdx: 2, nodeVerifier: "bl2", nodeVerified: "app",
+      rsaKeyName: "app_pub", rsaKeyFile: "oem_app_pub_rsa.pem",
       icon: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>', iconTile: "app" },
   };
 
@@ -771,7 +778,7 @@
     return subtle.verify({ name:"ECDSA", hash:"SHA-256" }, key, rawSig, dataBytes);
   }
 
-  // ---------------- RSA demo: literal decrypt-and-compare (PKCS#1 v1.5) ----------------
+  // ---------------- RSA: literal decrypt-and-compare (PKCS#1 v1.5) ----------------
   function readTLV(bytes, pos){
     const tag = bytes[pos];
     let lenByte = bytes[pos+1], headerLen = 2, len;
@@ -793,9 +800,12 @@
     }
     return raw;
   }
-  let rsaKeyCache = null;
+  // Keyed by the PEM string itself -- there are THREE distinct RSA public
+  // keys now (one per component, mirroring the ECDSA hierarchy), not one
+  // shared key, so a single-slot cache would silently reuse the wrong key.
+  const rsaKeyCache = new Map();
   function parseRsaSpki(pem){
-    if (rsaKeyCache) return rsaKeyCache;
+    if (rsaKeyCache.has(pem)) return rsaKeyCache.get(pem);
     const der = new Uint8Array(pemToArrayBuffer(pem));
     const top = readTLV(der, 0);
     const algId = readTLV(der, top.valueStart);
@@ -807,21 +817,23 @@
     let eBytes = der.slice(eInt.valueStart, eInt.valueEnd);
     if (nBytes[0] === 0x00) nBytes = nBytes.slice(1);
     if (eBytes[0] === 0x00) eBytes = eBytes.slice(1);
-    rsaKeyCache = { n: bytesToBigInt(nBytes), e: bytesToBigInt(eBytes), modLen: nBytes.length };
-    return rsaKeyCache;
+    const parsed = { n: bytesToBigInt(nBytes), e: bytesToBigInt(eBytes), modLen: nBytes.length };
+    rsaKeyCache.set(pem, parsed);
+    return parsed;
   }
   function modpow(base, exp, mod){
     let result = 1n; base = base % mod;
     while (exp > 0n){ if (exp & 1n) result = (result * base) % mod; exp >>= 1n; base = (base * base) % mod; }
     return result;
   }
-  // Step 1: decrypts the signature with the RSA ROOT public key (s^e mod n)
-  // and returns the recovered 256-byte encoded message EM. No hashing
-  // involved -- this is the literal "decrypt signature" step RSA is known for.
-  // Verification is ALWAYS performed against RSA_ROOT.pub, never against
-  // whatever key actually produced the signature under test.
-  function rsaDecryptSignature(sigB64){
-    const { n, e, modLen } = parseRsaSpki(RSA_ROOT.pub);
+  // Step 1: decrypts the signature with the component's RSA public key
+  // (s^e mod n) and returns the recovered 256-byte encoded message EM. No
+  // hashing involved -- this is the literal "decrypt signature" step RSA
+  // is known for. Verification is ALWAYS performed against the ROOT/HSM/BL2
+  // public key that's supposed to hold it, never against whatever key
+  // actually produced the signature under test.
+  function rsaDecryptSignature(sigB64, verifyingKeyPem){
+    const { n, e, modLen } = parseRsaSpki(verifyingKeyPem);
     const s = bytesToBigInt(b64ToBytes(sigB64));
     const m = modpow(s, e, n);
     return bigIntToBytesPadded(m, modLen);
@@ -971,14 +983,16 @@
       const equationHolds = await verifySigBytes(c.pubKeyName, sigB64, dataBytes);
       sig = { algorithm:"ecdsa", ok: equationHolds, keyFile: c.pubKeyFile, rHex, sHex };
     } else {
-      const sigBytes = normBytes(opts.sig) || b64ToBytes(RSA_ROOT.sigs[component]);
-      const em = rsaDecryptSignature(bytesToB64(sigBytes));
+      const c = COMPONENTS[component];
+      const sigBytes = normBytes(opts.sig) || b64ToBytes(RSA_SIGS[component]);
+      const verifyingKeyPem = RSA_KEYS[c.rsaKeyName];
+      const em = rsaDecryptSignature(bytesToB64(sigBytes), verifyingKeyPem);
       const padding = checkPkcs1Padding(em);
       let digestInfo = { ok:false, reason:"skipped (padding invalid)" };
       if (padding.ok) digestInfo = parseDigestInfo(em, padding.psEnd);
       const digestsMatch = padding.ok && digestInfo.ok && digestInfo.digestHex === computedHash;
       const ok = padding.ok && digestInfo.ok && digestsMatch;
-      sig = { algorithm:"rsa", ok, keyFile:"rsa_root_pub.pem", emHex: bytesToHex(em), padding, digestInfo, digestsMatch, sigHex: bytesToHex(sigBytes) };
+      sig = { algorithm:"rsa", ok, keyFile: c.rsaKeyFile, emHex: bytesToHex(em), padding, digestInfo, digestsMatch, sigHex: bytesToHex(sigBytes) };
     }
 
     return { component, algorithm, computedHash, manifestHash: manifest.sha256, hashOk, manifest, sig, overallOk: hashOk && sig.ok };
@@ -1055,10 +1069,12 @@
   // Header/reset/log-clearing is handled once by the runScenario() dispatcher
   // below -- these functions only contain the actual run.
   function attackerSigFor(component){
-    return currentAlgorithm === "ecdsa" ? LAB[component].sig_attacker : RSA_ATTACKER.sigs[component];
+    // Only hsm_fw has a forged signature on either side -- Scenario 3 is
+    // the only scenario that needs one, mirroring LAB[component].sig_attacker.
+    return currentAlgorithm === "ecdsa" ? LAB[component].sig_attacker : RSA_ATTACKER_SIG_HSM_FW;
   }
   function v2SigFor(){
-    return currentAlgorithm === "ecdsa" ? LAB.app.v2_sig : RSA_ROOT.sigs.app_v2;
+    return currentAlgorithm === "ecdsa" ? LAB.app.v2_sig : RSA_SIGS.app_v2;
   }
 
   async function scenarioHappy(){
@@ -1273,7 +1289,7 @@
         '<div class="kv"><span>component</span><span>' + data.manifest.component + '</span></div>' +
         '<div class="kv"><span>version</span><span>' + data.manifest.version + '</span></div>' +
         '<div class="kv"><span>size</span><span>' + data.manifest.size + ' bytes</span></div>' +
-        '<div class="kv"><span>algorithm</span><span>' + currentAlgorithm.toUpperCase() + (currentAlgorithm==="ecdsa"?" (REAL)":" (DEMO)") + '</span></div>' +
+        '<div class="kv"><span>algorithm</span><span>' + currentAlgorithm.toUpperCase() + ' (REAL)</span></div>' +
       '</div>';
 
     if (currentAlgorithm === "ecdsa"){
@@ -1291,16 +1307,17 @@
           '<pre>' + LAB.keys[c.pubKeyName].trim() + '</pre>' +
         '</div>';
     } else {
-      const sigBytes = b64ToBytes(RSA_ROOT.sigs[currentComponent]);
-      const { n, e, modLen } = parseRsaSpki(RSA_ROOT.pub);
+      const sigBytes = b64ToBytes(RSA_SIGS[currentComponent]);
+      const keyPem = RSA_KEYS[c.rsaKeyName];
+      const { n, e, modLen } = parseRsaSpki(keyPem);
       const nHex = n.toString(16);
       cardsEl.innerHTML =
         '<div class="card"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6 6.6.6-5 4.4 1.5 6.5L12 16l-5.9 3.5L7.5 13l-5-4.4 6.5-.6z"/></svg>Signature (RSA-2048)</h3>' +
           '<div class="mono">' + bytesToHex(sigBytes).slice(0,40) + '&hellip;</div>' +
         '</div>' +
         manifestCard +
-        '<div class="card" style="grid-column:1/-1"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 3l3 3M14 5l3 3"/></svg>Verifying Key &mdash; RSA_ROOT_PUB.PEM (demo only)<span class="loaded-pill" style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Loaded</span></h3>' +
-          '<div class="mono" style="margin-bottom:.3rem;color:var(--ink-faint)">e = ' + e.toString() + ', n = ' + modLen*8 + '-bit modulus &mdash; not used by the real boot chain</div>' +
+        '<div class="card" style="grid-column:1/-1"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 3l3 3M14 5l3 3"/></svg>Verifying Key &mdash; ' + c.rsaKeyFile.toUpperCase() + '<span class="loaded-pill" style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Loaded</span></h3>' +
+          '<div class="mono" style="margin-bottom:.3rem;color:var(--ink-faint)">' + c.pubKeyHolder + ' &mdash; e = ' + e.toString() + ', n = ' + modLen*8 + '-bit modulus</div>' +
           '<div class="mono" style="word-break:break-all">n = ' + nHex.slice(0,48) + '&hellip;</div>' +
         '</div>';
     }
@@ -1335,13 +1352,13 @@
   const schemeNoteEl = document.getElementById("schemeNote");
   function renderSchemeNote(){
     schemeNoteEl.textContent = currentAlgorithm === "ecdsa"
-      ? "Real key and signature from this lab's own setup.sh -- this is the exact check ROM / HSM / BL2 perform, and what the four scenarios above run."
-      : "Demo-only RSA-2048 key pair, generated separately from the real lab (which uses ECDSA everywhere). Also drives the four scenarios above when selected, so ECDSA and RSA can be compared step for step on the same images.";
+      ? "Real ECDSA P-256 keys and signatures from this lab's own setup.sh -- this is the exact check ROM / HSM / BL2 perform by default, and what the four scenarios above run."
+      : "Real RSA-2048/PKCS#1 v1.5 keys and signatures, ALSO from this lab's own setup.sh -- select SECURE_BOOT_ALGO=rsa and the same C code (common/verify_common.c) boots with these instead. Not a separate demo: same verifier, same four scenarios, a different key type.";
   }
 
   function refreshInspSub(){
     const c = COMPONENTS[currentComponent];
-    const keyFile = currentAlgorithm === "ecdsa" ? c.pubKeyFile : "rsa_root_pub.pem";
+    const keyFile = currentAlgorithm === "ecdsa" ? c.pubKeyFile : c.rsaKeyFile;
     inspTitle.textContent = c.label;
     inspBadge.textContent = "Verified by " + c.verifierName + " (" + currentAlgorithm.toUpperCase() + ")";
     inspSub.textContent = "Checked against " + keyFile + " -- this is the exact check " + c.verifierName + " performs.";

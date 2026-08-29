@@ -127,9 +127,14 @@ static void bytes_to_hex(const unsigned char *bytes, size_t len, char *out_hex) 
 
 /* ---------- signature verification ---------- */
 
-static int verify_ecdsa_signature_over_file(const char *pubkey_pem_path,
-                                             const char *image_path,
-                                             const char *sig_path) {
+/* Algorithm-agnostic on purpose: EVP_DigestVerifyInit/Update/Final dispatch
+ * on the TYPE of the EVP_PKEY loaded from pubkey_pem_path. Load an EC key
+ * and this does ECDSA; load an RSA key and this does RSA/PKCS#1 v1.5
+ * (OpenSSL's default RSA verify padding) -- same code path, same three
+ * calls, no branching needed here. */
+static int verify_signature_over_file(const char *pubkey_pem_path,
+                                       const char *image_path,
+                                       const char *sig_path) {
     FILE *pf = fopen(pubkey_pem_path, "r");
     if (!pf) {
         fprintf(stderr, "  [sig] cannot open public key %s\n", pubkey_pem_path);
@@ -230,7 +235,7 @@ int verify_stage_image(const char *stage_label,
         return 0;
     }
 
-    if (!verify_ecdsa_signature_over_file(pubkey_pem_path, image_path, sig_path)) {
+    if (!verify_signature_over_file(pubkey_pem_path, image_path, sig_path)) {
         printf("[%s] FAIL: signature verification failed -- wrong key, wrong"
                " signature, or tampered image\n", stage_label);
         return 0;

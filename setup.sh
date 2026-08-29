@@ -44,9 +44,15 @@ app=1
 EOF
 
 # --- 2. generate keys -------------------------------------------------
+# Two full, independent key hierarchies -- ECDSA (default, no suffix) and
+# RSA (--algo rsa, "_rsa" suffix) -- generated side by side so either can
+# be selected at run time via SECURE_BOOT_ALGO without regenerating.
 echo ""
-echo "[setup] generating keys"
+echo "[setup] generating keys (ECDSA P-256)"
 python3 tools/generate_keys.py
+echo ""
+echo "[setup] generating keys (RSA-2048)"
+python3 tools/generate_keys.py --algo rsa
 
 # --- 3. create dummy firmware images ----------------------------------
 # Real images would be compiled firmware binaries. For the lab, the
@@ -60,16 +66,22 @@ printf 'APPLICATION-v1 :: simulated trusted application payload\n' > images/app.
 echo "  wrote images/hsm_fw.bin, images/bl2.bin, images/app.bin"
 
 # --- 4. sign images + manifests (version 1) ---------------------------
+# The manifest (hash/version/size) is identical either way -- it describes
+# the IMAGE, not who signed it -- so each component gets ONE manifest and
+# TWO signatures (ECDSA + RSA) over the same bytes.
 echo ""
 echo "[setup] signing images and writing manifests (version 1)"
 
 python3 tools/sign_image.py   images/hsm_fw.bin keys/hsm_signer_priv.pem images/hsm_fw.sig
+python3 tools/sign_image.py   images/hsm_fw.bin keys/hsm_signer_priv_rsa.pem images/hsm_fw_rsa.sig
 python3 tools/make_manifest.py hsm_fw 1 images/hsm_fw.bin images/hsm_fw_manifest.json
 
 python3 tools/sign_image.py   images/bl2.bin keys/oem_bl_priv.pem images/bl2.sig
+python3 tools/sign_image.py   images/bl2.bin keys/oem_bl_priv_rsa.pem images/bl2_rsa.sig
 python3 tools/make_manifest.py bl2 1 images/bl2.bin images/bl2_manifest.json
 
 python3 tools/sign_image.py   images/app.bin keys/oem_app_priv.pem images/app.sig
+python3 tools/sign_image.py   images/app.bin keys/oem_app_priv_rsa.pem images/app_rsa.sig
 python3 tools/make_manifest.py app 1 images/app.bin images/app_manifest.json
 
 # --- 5. negative-test artifacts ---------------------------------------
@@ -82,5 +94,7 @@ python3 tools/corrupt_image.py flip images/app.bin    images/app_corrupt.bin
 echo ""
 echo "[setup] DONE. Next steps:"
 echo "  make          # build the simulator"
-echo "  ./run.sh      # run the happy-path boot + the failure demos"
+echo "  ./bin/secure_boot_sim                       # boot with ECDSA (default)"
+echo "  SECURE_BOOT_ALGO=rsa ./bin/secure_boot_sim   # boot with RSA-2048 instead"
+echo "  ./run.sh      # run the happy-path boot + the failure demos, under BOTH algorithms"
 echo "  make tests && ./run_tests.sh   # build and run unit tests"
